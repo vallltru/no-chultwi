@@ -1,0 +1,33 @@
+=== 1. 회원가입 (Sign Up)
+
+새로운 사용자를 등록합니다. 기본 역할(role)은 `ROLE_STUDENT`이며, 관리자는 `ROLE_ADMIN`으로 지정할 수 있습니다.
+
+==== HTTP Request
+include::{snippets}/user-signup/http-request.adoc[]
+
+==== Request Fields
+include::{snippets}/user-signup/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/user-signup/http-response.adoc[]
+
+==== Response Fields
+include::{snippets}/user-signup/response-fields.adoc[]
+
+---
+
+=== 2. 로그인 (Login)
+
+아이디와 비밀번호로 로그인하여 JWT Access Token을 발급받습니다.
+
+==== HTTP Request
+include::{snippets}/user-login/http-request.adoc[]
+
+==== Request Fields
+include::{snippets}/user-login/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/user-login/http-response.adoc[]
+
+==== Response Fields
+include::{snippets}/user-login/response-fields.adoc[]

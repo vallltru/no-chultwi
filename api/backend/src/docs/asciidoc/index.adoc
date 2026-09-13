@@ -1,0 +1,25 @@
+= No Chultwi (노출퇴) API 명세서
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 3
+:sectlinks:
+:sectnums:
+
+[[overview]]
+== 개요
+이 문서는 **No Chultwi (노출퇴)** 백엔드 REST API 명세서입니다. +
+Spring REST Docs를 기반으로 자동화된 컨트롤러 단위 테스트를 거쳐 100% 검증된 내용으로 자동 생성되었습니다.
+
+=== 기본 정보
+* **Base URL**: `http://localhost:8080`
+* **인증 방식**: JWT (JSON Web Token)
+* **인증 헤더 규격**: `Authorization: Bearer <accessToken>`
+
+---
+
+[[User-API]]
+== 1. 사용자 (User) & 인증 API
+
+include::user/user.adoc[]
