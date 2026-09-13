@@ -1,6 +1,7 @@
 package com.nochultwi.backend.domain.user.controller;
 
 import com.nochultwi.backend.domain.user.dto.LoginRequestDto;
+import com.nochultwi.backend.domain.user.dto.LoginResponseDto;
 import com.nochultwi.backend.domain.user.dto.SignUpRequestDto;
 import com.nochultwi.backend.domain.user.entity.User;
 import com.nochultwi.backend.domain.user.service.UserService;
@@ -33,11 +34,11 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<User> login(@RequestBody LoginRequestDto request){
+    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto request){
 
-        User user = userService.login(request.getLoginId(), request.getPassword());
+        String token = userService.login(request.getLoginId(), request.getPassword());
 
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(new LoginResponseDto("Bearer", token));
     }
 
 

@@ -3,6 +3,7 @@ package com.nochultwi.backend.domain.user.service;
 import com.nochultwi.backend.domain.user.entity.Role;
 import com.nochultwi.backend.domain.user.entity.User;
 import com.nochultwi.backend.domain.user.repository.UserRepository;
+import com.nochultwi.backend.global.security.jwt.JwtTokenProvider;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 public class UserService {
     private final UserRepository userRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
     public User signUp(String loginId, String password, String name, String email, Long studentNumber, Role role){
@@ -43,14 +45,14 @@ public class UserService {
 
     }
 
-    public User login(String loginId, String password){
+    public String login(String loginId, String password){
        User user = userRepository.findByLoginId(loginId).orElseThrow(
                () -> new IllegalArgumentException("존재하지않는 아이디" ));
 
        if(!user.getPassword().equals(password)){
            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
        }
-       return user;
+       return jwtTokenProvider.createToken(user.getLoginId(), user.getRole());
     }
 
 }
