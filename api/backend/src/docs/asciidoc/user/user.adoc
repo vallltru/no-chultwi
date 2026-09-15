@@ -1,0 +1,71 @@
+=== 1. 회원가입 (Sign Up)
+
+새로운 사용자를 등록합니다. 가입 완료 즉시 자동 로그인되어 JWT Access Token을 발급받습니다. +
+기본 역할(role)은 `ROLE_STUDENT`이며, 관리자는 `ROLE_ADMIN`으로 지정할 수 있습니다.
+
+==== HTTP Request
+include::{snippets}/user-signup/http-request.adoc[]
+
+==== Request Fields
+include::{snippets}/user-signup/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/user-signup/http-response.adoc[]
+
+==== Response Fields
+include::{snippets}/user-signup/response-fields.adoc[]
+
+---
+
+=== 2. 로그인 (Login)
+
+아이디와 비밀번호로 로그인하여 JWT Access Token을 발급받습니다.
+
+==== HTTP Request
+include::{snippets}/user-login/http-request.adoc[]
+
+==== Request Fields
+include::{snippets}/user-login/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/user-login/http-response.adoc[]
+
+==== Response Fields
+include::{snippets}/user-login/response-fields.adoc[]
+
+---
+
+=== 3. 아이디 찾기 (Find ID)
+
+가입 시 등록한 이메일과 학번을 통해 사용자의 로그인 아이디를 조회합니다.
+
+==== HTTP Request
+include::{snippets}/user-find-id/http-request.adoc[]
+
+==== Request Fields
+include::{snippets}/user-find-id/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/user-find-id/http-response.adoc[]
+
+==== Response Fields
+include::{snippets}/user-find-id/response-fields.adoc[]
+
+---
+
+=== 4. 비밀번호 재설정 (Reset Password)
+
+사용자 식별 정보(아이디, 이메일, 학번)를 검증한 후 새로운 비밀번호로 변경합니다.
+
+==== HTTP Request
+include::{snippets}/user-reset-password/http-request.adoc[]
+
+==== Request Fields
+include::{snippets}/user-reset-password/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/user-reset-password/http-response.adoc[]
+
+==== Response Fields
+include::{snippets}/user-reset-password/response-fields.adoc[]
+
