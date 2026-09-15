@@ -1,20 +1,15 @@
 package com.nochultwi.backend.domain.user.dto;
 
-import com.nochultwi.backend.domain.user.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-public class SignUpRequestDto {
+public class FindIdRequestDto {
 
-    private String loginId;
-    private String name;
     private String email;
-    private String password;
     private Long studentNumber;
-    private Role role;
 
 }

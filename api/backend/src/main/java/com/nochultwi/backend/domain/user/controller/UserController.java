@@ -1,8 +1,6 @@
 package com.nochultwi.backend.domain.user.controller;
 
-import com.nochultwi.backend.domain.user.dto.LoginRequestDto;
-import com.nochultwi.backend.domain.user.dto.LoginResponseDto;
-import com.nochultwi.backend.domain.user.dto.SignUpRequestDto;
+import com.nochultwi.backend.domain.user.dto.*;
 import com.nochultwi.backend.domain.user.entity.User;
 import com.nochultwi.backend.domain.user.service.UserService;
 import lombok.AllArgsConstructor;
@@ -20,7 +18,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/signup")
-    public ResponseEntity<User> signUp(@RequestBody SignUpRequestDto request){
+    public ResponseEntity<SignUpResponseDto> signUp(@RequestBody SignUpRequestDto request){
         User user = userService.signUp(
                 request.getLoginId(),
                 request.getPassword(),
@@ -29,7 +27,10 @@ public class UserController {
                 request.getStudentNumber(),
                 request.getRole()
         );
-        return ResponseEntity.ok(user);
+
+        String token = userService.login(request.getLoginId(), request.getPassword());
+
+        return ResponseEntity.ok(new SignUpResponseDto("Bearer", token));
 
     }
 
@@ -40,6 +41,15 @@ public class UserController {
 
         return ResponseEntity.ok(new LoginResponseDto("Bearer", token));
     }
+
+    @PostMapping("/findid")
+    public ResponseEntity<FindIdResponseDto> findId(@RequestBody FindIdRequestDto request){
+
+        String loginId= userService.findId(request.getEmail(), request.getStudentNumber());
+
+        return ResponseEntity.ok(new FindIdResponseDto(loginId));
+    }
+
 
 
 }

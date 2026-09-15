@@ -5,7 +5,6 @@ import com.nochultwi.backend.domain.user.entity.User;
 import com.nochultwi.backend.domain.user.repository.UserRepository;
 import com.nochultwi.backend.global.security.jwt.JwtTokenProvider;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,8 +40,7 @@ public class UserService {
                 .email(email)
                 .studentNumber(studentNumber).build();
 
-        return userRepository.save(newUser);
-
+        return newUser;
     }
 
     public String login(String loginId, String password){
@@ -53,6 +51,18 @@ public class UserService {
            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
        }
        return jwtTokenProvider.createToken(user.getLoginId(), user.getRole());
+    }
+
+    public String findId(String email, Long studentNumber){
+        if(!(userRepository.existsByEmail(email) & userRepository.existsByStudentNumber(studentNumber))){
+             throw new IllegalArgumentException("이메일 혹은 학번이 일치하지 않습니다.");
+        }
+        User user = userRepository.findByEmail(email).orElseThrow(
+                ()-> new IllegalArgumentException("존재하지 않는 유저")
+                );
+
+        return user.getLoginId();
+
     }
 
 }

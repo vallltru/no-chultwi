@@ -33,7 +33,7 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/users/signup", "/api/v1/users/login").permitAll()
+                        .requestMatchers("/api/v1/users/signup", "/api/v1/users/login", "/api/v1/users/findid").permitAll()
                         .requestMatchers("/docs/**", "/error", "/h2-console/**").permitAll()
                         .anyRequest().authenticated()
                 )
