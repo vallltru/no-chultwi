@@ -31,7 +31,7 @@ public class User {
     @Column(nullable = false, unique = true, length = 10)
     private Long studentNumber;
 
-    @Enumerated()
+    @Enumerated(EnumType.STRING)
     private Role role;
 
     public void updatePassword(String newPassword) {

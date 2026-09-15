@@ -20,7 +20,7 @@ No Chultwi의 비즈니스 로직과 API를 담당하는 Spring Boot 기반 백�
 ### Core & Framework
 
 - Java: 17.0.19 (JDK 17)
-- **Spring Boot: 4.1.1
+- Spring Boot: 4.1.1
 - Spring Dependency Management: 1.1.7
 - Build Tool: Gradle 8.x
 
@@ -45,9 +45,9 @@ No Chultwi의 비즈니스 로직과 API를 담당하는 Spring Boot 기반 백�
 
 ## API 명세서 (API Documentation)
 Spring REST Docs를 통해 Controller 단위 테스트 통과 시 자동으로 생성되는 API 문서입니다.
-* **로컬 환경**: `http://localhost:8080/docs/index.html`
-* **개발 서버**: `http://43.203.146.101:8080/docs/index.html`   
-* **문서 생성 태스크**: `./gradlew asciidoctor copyDocument`
+* 로컬 환경: `http://localhost:8080/docs/index.html`
+* 개발 서버: `http://43.203.146.101:8080/docs/index.html`   
+* 문서 생성 태스크: `./gradlew asciidoctor copyDocument`
 
 ## 실행 방법 (Getting Started)
 

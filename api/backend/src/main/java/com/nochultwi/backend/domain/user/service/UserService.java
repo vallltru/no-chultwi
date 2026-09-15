@@ -32,15 +32,16 @@ public class UserService {
             throw new IllegalArgumentException("중복된 학번");
         }
         Role userRole = (role != null) ? role : Role.ROLE_STUDENT;
-        User newUser = User.builder().
-                loginId(loginId)
+        User newUser = User.builder()
+                .loginId(loginId)
                 .name(name)
                 .role(userRole)
                 .password(password)
                 .email(email)
-                .studentNumber(studentNumber).build();
+                .studentNumber(studentNumber)
+                .build();
 
-        return newUser;
+        return userRepository.save(newUser);
     }
 
     public String login(String loginId, String password){
@@ -54,15 +55,15 @@ public class UserService {
     }
 
     public String findId(String email, Long studentNumber){
-        if(!(userRepository.existsByEmail(email) & userRepository.existsByStudentNumber(studentNumber))){
-             throw new IllegalArgumentException("이메일 혹은 학번이 일치하지 않습니다.");
-        }
         User user = userRepository.findByEmail(email).orElseThrow(
-                ()-> new IllegalArgumentException("존재하지 않는 유저")
-                );
+                () -> new IllegalArgumentException("존재하지 않는 사용자입니다.")
+        );
+
+        if (!user.getStudentNumber().equals(studentNumber)) {
+            throw new IllegalArgumentException("이메일 혹은 학번이 일치하지 않습니다.");
+        }
 
         return user.getLoginId();
-
     }
 
     @Transactional
