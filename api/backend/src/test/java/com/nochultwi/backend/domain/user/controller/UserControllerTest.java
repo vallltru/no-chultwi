@@ -1,6 +1,7 @@
 package com.nochultwi.backend.domain.user.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nochultwi.backend.domain.user.dto.FindIdRequestDto;
 import com.nochultwi.backend.domain.user.dto.LoginRequestDto;
 import com.nochultwi.backend.domain.user.dto.SignUpRequestDto;
 import com.nochultwi.backend.domain.user.entity.Role;
@@ -68,6 +69,8 @@ class UserControllerTest {
 
         given(userService.signUp(any(), any(), any(), any(), any(), any()))
                 .willReturn(mockUser);
+        given(userService.login("student123", "password123!"))
+                .willReturn("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mockAccessToken...");
 
         // when & then
         mockMvc.perform(post("/api/v1/users/signup")
@@ -86,13 +89,8 @@ class UserControllerTest {
                                 fieldWithPath("role").description("사용자 역할 (ROLE_STUDENT / ROLE_ADMIN)")
                         ),
                         responseFields(
-                                fieldWithPath("id").description("생성된 사용자 고유 ID"),
-                                fieldWithPath("loginId").description("로그인 아이디"),
-                                fieldWithPath("password").description("비밀번호 (해시값 또는 암호화된 값)"),
-                                fieldWithPath("name").description("사용자 이름"),
-                                fieldWithPath("email").description("이메일 주소"),
-                                fieldWithPath("studentNumber").description("학번"),
-                                fieldWithPath("role").description("사용자 역할")
+                                fieldWithPath("tokenType").description("토큰 인증 타입 (Bearer)"),
+                                fieldWithPath("accessToken").description("발급된 JWT Access Token (자동 로그인)")
                         )
                 ));
     }
@@ -122,6 +120,33 @@ class UserControllerTest {
                         responseFields(
                                 fieldWithPath("tokenType").description("토큰 인증 타입 (Bearer)"),
                                 fieldWithPath("accessToken").description("발급된 JWT Access Token")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("아이디 찾기 API 문서화")
+    void findId_성공() throws Exception {
+        // given
+        FindIdRequestDto requestDto = new FindIdRequestDto("student@example.com", 2024123456L);
+
+        given(userService.findId("student@example.com", 2024123456L))
+                .willReturn("student123");
+
+        // when & then
+        mockMvc.perform(post("/api/v1/users/findid")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isOk())
+                .andDo(document("user-find-id",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestFields(
+                                fieldWithPath("email").description("가입 시 등록한 이메일"),
+                                fieldWithPath("studentNumber").description("학번")
+                        ),
+                        responseFields(
+                                fieldWithPath("loginId").description("조회된 사용자 로그인 아이디")
                         )
                 ));
     }
