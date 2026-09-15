@@ -50,6 +50,16 @@ public class UserController {
         return ResponseEntity.ok(new FindIdResponseDto(loginId));
     }
 
+    @PostMapping("/reset-password")
+    public ResponseEntity<ResetPasswordResponseDto> resetPassword(@RequestBody ResetPasswordRequestDto request){
+        userService.resetPassword(
+                request.getLoginId(),
+                request.getEmail(),
+                request.getStudentNumber(),
+                request.getNewPassword()
+        );
 
+        return ResponseEntity.ok(new ResetPasswordResponseDto("비밀번호가 성공적으로 변경되었습니다."));
+    }
 
 }

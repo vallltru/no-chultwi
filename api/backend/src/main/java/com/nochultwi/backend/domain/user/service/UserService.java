@@ -65,4 +65,17 @@ public class UserService {
 
     }
 
+    @Transactional
+    public void resetPassword(String loginId, String email, Long studentNumber, String newPassword) {
+        User user = userRepository.findByLoginId(loginId).orElseThrow(
+                () -> new IllegalArgumentException("존재하지 않는 사용자입니다.")
+        );
+
+        if (!user.getEmail().equals(email) || !user.getStudentNumber().equals(studentNumber)) {
+            throw new IllegalArgumentException("이메일 혹은 학번이 일치하지 않습니다.");
+        }
+
+        user.updatePassword(newPassword);
+    }
+
 }
