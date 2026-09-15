@@ -3,6 +3,7 @@ package com.nochultwi.backend.domain.user.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nochultwi.backend.domain.user.dto.FindIdRequestDto;
 import com.nochultwi.backend.domain.user.dto.LoginRequestDto;
+import com.nochultwi.backend.domain.user.dto.ResetPasswordRequestDto;
 import com.nochultwi.backend.domain.user.dto.SignUpRequestDto;
 import com.nochultwi.backend.domain.user.entity.Role;
 import com.nochultwi.backend.domain.user.entity.User;
@@ -19,6 +20,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.mock;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
@@ -147,6 +149,39 @@ class UserControllerTest {
                         ),
                         responseFields(
                                 fieldWithPath("loginId").description("조회된 사용자 로그인 아이디")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("비밀번호 재설정 API 문서화")
+    void resetPassword_성공() throws Exception {
+        // given
+        ResetPasswordRequestDto requestDto = new ResetPasswordRequestDto(
+                "student123",
+                "student@example.com",
+                2024123456L,
+                "newPassword123!"
+        );
+
+        willDoNothing().given(userService).resetPassword(any(), any(), any(), any());
+
+        // when & then
+        mockMvc.perform(post("/api/v1/users/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isOk())
+                .andDo(document("user-reset-password",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestFields(
+                                fieldWithPath("loginId").description("사용자 로그인 아이디"),
+                                fieldWithPath("email").description("가입 시 등록한 이메일"),
+                                fieldWithPath("studentNumber").description("학번"),
+                                fieldWithPath("newPassword").description("새로 설정할 비밀번호")
+                        ),
+                        responseFields(
+                                fieldWithPath("message").description("처리 완료 안내 메시지")
                         )
                 ));
     }
