@@ -1,0 +1,11 @@
+.app {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.app__content {
+  width: min(100%, 32rem);
+  text-align: center;
+}

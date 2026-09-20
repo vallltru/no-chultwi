@@ -1,0 +1,10 @@
+html {
+  min-width: 320px;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100svh;
+  margin: 0;
+  font-family: var(--seed-font-family);
+}
