@@ -11,7 +11,7 @@ function App() {
             No Chultwi
           </Text>
           <Text as="p" textStyle="t5Regular" color="fg.neutralMuted">
-            기본 설정 끝~
+            기본 설정 끝~~
           </Text>
         </VStack>
         <ActionButton size="large" variant="brandSolid">

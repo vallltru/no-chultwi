@@ -9,7 +9,7 @@ export default defineConfig({
     tsconfigPaths: true,
   },
   server: {
-    host: true, // 또는 true
-    port: 5173
+    host: true,
+    port: 5174,
   },
 })
