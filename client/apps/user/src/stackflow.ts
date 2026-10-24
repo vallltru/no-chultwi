@@ -1,21 +1,21 @@
 import { seedPlugin } from '@seed-design/stackflow'
 import { basicRendererPlugin } from '@stackflow/plugin-renderer-basic'
 import { stackflow } from '@stackflow/react'
-import { AttendanceCompleteScreen } from './screens/AttendanceCompleteScreen'
-import { FaceRecognitionScreen } from './screens/FaceRecognitionScreen'
-import { GuideScreen } from './screens/GuideScreen'
-import { HomeScreen } from './screens/HomeScreen'
-import { RecognitionConfirmationScreen } from './screens/RecognitionConfirmationScreen'
+import { AttendanceCompleteActivity } from './activities/AttendanceCompleteActivity'
+import { FaceRecognitionActivity } from './activities/FaceRecognitionActivity'
+import { GuideActivity } from './activities/GuideActivity'
+import { HomeActivity } from './activities/HomeActivity'
+import { RecognitionConfirmationActivity } from './activities/RecognitionConfirmationActivity'
 import { config } from './stackflow.config'
 
 export const { Stack } = stackflow({
   config,
   components: {
-    Home: HomeScreen,
-    FaceRecognition: FaceRecognitionScreen,
-    RecognitionConfirmation: RecognitionConfirmationScreen,
-    AttendanceComplete: AttendanceCompleteScreen,
-    Guide: GuideScreen,
+    Home: HomeActivity,
+    FaceRecognition: FaceRecognitionActivity,
+    RecognitionConfirmation: RecognitionConfirmationActivity,
+    AttendanceComplete: AttendanceCompleteActivity,
+    Guide: GuideActivity,
   },
   plugins: [basicRendererPlugin(), seedPlugin({ theme: 'android' })],
 })

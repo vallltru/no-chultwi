@@ -1,27 +1,20 @@
-import { AppScreen } from '@seed-design/stackflow'
-import { Flex } from '@seed-design/react'
-import type { ActivityComponentType } from '@stackflow/react'
-import { ActionButton } from 'seed-design/ui/action-button'
-import { useReturnHome } from './useReturnHome'
+import { ActionButton, Flex } from '@seed-design/react'
 
-export const GuideScreen: ActivityComponentType<'Guide'> = () => {
-  const returnHome = useReturnHome()
+type GuideScreenProps = {
+  onConfirm: () => void
+}
 
+export const GuideScreen = ({ onConfirm }: GuideScreenProps) => {
   return (
-    <AppScreen.Root transitionStyle="fadeIn">
-      <AppScreen.Dim />
-      <AppScreen.Layer>
-        <Flex height="full" align="center" justify="center">
-          <ActionButton
-            type="button"
-            size="large"
-            variant="brandSolid"
-            onClick={returnHome}
-          >
-            확인
-          </ActionButton>
-        </Flex>
-      </AppScreen.Layer>
-    </AppScreen.Root>
+    <Flex height="full" align="center" justify="center">
+      <ActionButton
+        type="button"
+        size="large"
+        variant="brandSolid"
+        onClick={onConfirm}
+      >
+        확인
+      </ActionButton>
+    </Flex>
   )
 }
