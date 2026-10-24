@@ -13,6 +13,11 @@ Thumbs.db
 .env.*
 !.env.example
 !.env.*.example
+*secret*.properties
+*secret*.yml
+*secret*.yaml
+!*secret*.example
+!*secret*.properties.example
 
 # Logs
 *.log
