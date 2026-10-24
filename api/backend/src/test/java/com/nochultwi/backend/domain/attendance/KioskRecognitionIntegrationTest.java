@@ -128,7 +128,8 @@ class KioskRecognitionIntegrationTest {
                 .andExpect(jsonPath("$.recognitionToken").isNotEmpty())
                 .andExpect(jsonPath("$.expiresAt").isNotEmpty())
                 .andExpect(jsonPath("$.candidate.name").isNotEmpty())
-                .andExpect(jsonPath("$.candidate.department").isNotEmpty());
+                .andExpect(jsonPath("$.candidate.department").isNotEmpty())
+                .andExpect(jsonPath("$.candidate.admissionYear").isNumber());
     }
 
     @Test
@@ -319,5 +320,23 @@ class KioskRecognitionIntegrationTest {
                         .param("sessionId", SESSION_ID))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("DEVICE_UNAUTHORIZED"));
+    }
+
+    @Test
+    @DisplayName("5MB를 초과하는 대용량 이미지 전송 시 413 IMAGE_TOO_LARGE를 반환한다")
+    void recognizeImageExceeds5MbReturns413() throws Exception {
+        byte[] oversizedBytes = new byte[5 * 1024 * 1024 + 1];
+        MockMultipartFile largeImage = new MockMultipartFile(
+                "image", "large.jpg", "image/jpeg", oversizedBytes
+        );
+
+        mockMvc.perform(multipart("/api/v1/kiosk/recognitions")
+                        .file(largeImage)
+                        .param("courseId", COURSE_ID)
+                        .param("sessionId", SESSION_ID)
+                        .header("X-Device-Id", TEST_DEVICE_ID)
+                        .header("X-Device-Key", TEST_DEVICE_KEY))
+                .andExpect(status().isPayloadTooLarge())
+                .andExpect(jsonPath("$.code").value("IMAGE_TOO_LARGE"));
     }
 }

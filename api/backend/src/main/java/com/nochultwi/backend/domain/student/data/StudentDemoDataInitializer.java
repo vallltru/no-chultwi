@@ -66,8 +66,9 @@ public class StudentDemoDataInitializer implements CommandLineRunner {
         Random random = new Random(20261025L); // 재현 가능한 고정 시드
 
         for (int i = 0; i < DEMO_STUDENT_COUNT; i++) {
-            // 숫자 10자리 학번 (예: 2026920001)
-            String studentNumber = String.format("202692%04d", i + 1);
+            // 1~4학년 다변화 (2023 ~ 2026학번, 숫자 10자리 규격)
+            int admissionYear = 2023 + (i % 4);
+            String studentNumber = String.format("%d92%04d", admissionYear, i + 1);
             String name = LAST_NAMES[i % LAST_NAMES.length] + FIRST_NAMES[i % FIRST_NAMES.length];
             String department = DEPARTMENTS[i % DEPARTMENTS.length];
 
@@ -79,7 +80,7 @@ public class StudentDemoDataInitializer implements CommandLineRunner {
                     .studentNumber(studentNumber)
                     .name(name)
                     .department(department)
-                    .admissionYear(2026)
+                    .admissionYear(admissionYear)
                     .faceVector(faceVectorBytes)
                     .build();
 

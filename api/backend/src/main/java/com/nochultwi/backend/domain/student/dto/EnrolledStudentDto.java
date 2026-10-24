@@ -8,6 +8,7 @@ public record EnrolledStudentDto(
         String studentNumber,
         String name,
         String department,
+        int admissionYear,
         byte[] faceVector
 ) {
     public static EnrolledStudentDto from(CourseEnrollment enrollment) {
@@ -17,6 +18,7 @@ public record EnrolledStudentDto(
                 s.getStudentNumber(),
                 s.getName(),
                 s.getDepartment(),
+                s.getAdmissionYear(),
                 s.getFaceVector()
         );
     }

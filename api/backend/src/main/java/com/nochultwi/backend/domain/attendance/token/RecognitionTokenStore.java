@@ -72,8 +72,23 @@ public class RecognitionTokenStore {
                 expiresAt,
                 new AtomicBoolean(false)
         );
+        // 메모리 누수 방어: 토큰이 50개 이상 누적 시 만료된 토큰 능동적 회수
+        if (store.size() > 50) {
+            cleanupExpiredTokens();
+        }
+
         store.put(token, data);
         return data;
+    }
+
+    /**
+     * 만료 시각이 지난 토큰들을 인메모리 맵에서 일괄 제거합니다.
+     */
+    public int cleanupExpiredTokens() {
+        Instant now = clock.instant();
+        int initialSize = store.size();
+        store.entrySet().removeIf(entry -> entry.getValue().isExpired(now));
+        return initialSize - store.size();
     }
 
     public Optional<RecognitionTokenData> findToken(String token) {

@@ -50,8 +50,23 @@ public class IdempotencyStore {
     }
 
     public void save(String idempotencyKey, String requestPayloadHash, int httpStatus, Object responseBody, long ttlSeconds) {
+        // 메모리 누수 방어: 캐시 항목이 200개 초과 누적 시 만료된 항목 능동적 회수
+        if (cache.size() > 200) {
+            cleanupExpiredEntries();
+        }
+
         Instant expiresAt = clock.instant().plusSeconds(ttlSeconds);
         cache.put(idempotencyKey, new IdempotencyEntry(idempotencyKey, requestPayloadHash, httpStatus, responseBody, expiresAt));
+    }
+
+    /**
+     * 보관 기간(24시간)이 경과한 멱등성 응답 캐시를 일괄 정리합니다.
+     */
+    public int cleanupExpiredEntries() {
+        Instant now = clock.instant();
+        int initialSize = cache.size();
+        cache.entrySet().removeIf(entry -> entry.getValue().isExpired(now));
+        return initialSize - cache.size();
     }
 
     public void clear() {

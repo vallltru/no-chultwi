@@ -152,8 +152,14 @@ async def extract_embedding(
                 logger.info("No face detected in the image.")
                 return EmbedResponse(success=False, message="NO_FACE_DETECTED")
             
-            # 가장 큰 얼굴 선택
-            best_face = max(faces, key=lambda f: (f.bbox[2] - f.bbox[0]) * (f.bbox[3] - f.bbox[1]))
+            # 명세 6.3: 여러 얼굴이 검출된 경우 화면 중앙에 가장 가까운 사용자 얼굴을 선택
+            img_center_x, img_center_y = width / 2.0, height / 2.0
+            def distance_to_center(f):
+                face_cx = (f.bbox[0] + f.bbox[2]) / 2.0
+                face_cy = (f.bbox[1] + f.bbox[3]) / 2.0
+                return (face_cx - img_center_x) ** 2 + (face_cy - img_center_y) ** 2
+
+            best_face = min(faces, key=distance_to_center)
             embedding = best_face.embedding.astype(np.float32)
             
             norm = np.linalg.norm(embedding)

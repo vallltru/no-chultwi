@@ -7,11 +7,11 @@ No Chultwi의 비즈니스 로직과 API를 담당하는 Spring Boot 기반 백�
 - [ ] 회원 및 기본 인증 (User & Auth)
   - 학생/관리자 회원가입 및 로그인 API
   - H2 인메모리 데이터베이스 연동 및 기본 SecurityConfig 구축
-  - JJWT 기반 Access Toke 발급/검증 구조
-- [ ] 강의 및 출석 관리 (Course & Schedule)
-  - 학번 기준 학생 맞춤형 주간 강의 및 출석 데이터 조회 API
-- [ ] 얼굴 인식 기반 출석 자동 판정 (Attendance Processing)
-  - 단말기(라즈베리 파이) 128차원 벡터 매칭 및 태깅 시각 기준 출석/지각/결석 자동 판정 API
+  - JJWT 기반 Access Token 발급/검증 구조
+- [x] 강의 및 출석 관리 (Course & Schedule)
+  - 키오스크용 활성 강의/차시 조회 및 2단계 출결 확정 API
+- [x] 얼굴 인식 기반 출석 자동 판정 (Attendance Processing)
+  - FastAPI 사이드카(InsightFace ArcFace 512차원) 특징 벡터 추출 및 코사인 유사도 매칭 기반 출결 판정 API
 - [ ] 출석 모니터링 및 관리자 기능 (Admin Reporting)
   - 주차별 출석 히스토리 조회 및 출석 상태 수동 변경 API
 
@@ -56,3 +56,4 @@ No Chultwi의 비즈니스 로직과 API를 담당하는 Spring Boot 기반 백�
 
 # Linux / macOS / EC2
 ./gradlew clean build -x test
+```
