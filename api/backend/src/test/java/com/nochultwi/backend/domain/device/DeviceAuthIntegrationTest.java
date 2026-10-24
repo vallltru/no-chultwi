@@ -35,7 +35,7 @@ class DeviceAuthIntegrationTest {
 
     private static final String TEST_DEVICE_ID = "kiosk-it-301";
     private static final String TEST_RAW_KEY = "kiosk-secret-key-1234!";
-    private static final String ASSIGNED_COURSE_ID = "30000";
+    private static final String ASSIGNED_COURSE_ID = "30000-03";
 
     @Autowired
     private WebApplicationContext context;
@@ -84,7 +84,7 @@ class DeviceAuthIntegrationTest {
     @Test
     @DisplayName("단말기 인증 헤더(X-Device-Id, X-Device-Key)가 누락되면 401 DEVICE_UNAUTHORIZED를 반환한다")
     void missingHeadersReturns401() throws Exception {
-        mockMvc.perform(get("/api/v1/kiosk/courses/30000/current-session"))
+        mockMvc.perform(get("/api/v1/kiosk/courses/30000-03/probe"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("DEVICE_UNAUTHORIZED"))
                 .andExpect(header().exists("X-Request-Id"));
@@ -93,7 +93,7 @@ class DeviceAuthIntegrationTest {
     @Test
     @DisplayName("등록되지 않은 단말기 ID로 요청하면 401 DEVICE_UNAUTHORIZED를 반환한다")
     void unregisteredDeviceReturns401() throws Exception {
-        mockMvc.perform(get("/api/v1/kiosk/courses/30000/current-session")
+        mockMvc.perform(get("/api/v1/kiosk/courses/30000-03/probe")
                         .header("X-Device-Id", "unknown-kiosk")
                         .header("X-Device-Key", TEST_RAW_KEY))
                 .andExpect(status().isUnauthorized())
@@ -103,7 +103,7 @@ class DeviceAuthIntegrationTest {
     @Test
     @DisplayName("단말기 비밀키가 불일치하면 401 DEVICE_UNAUTHORIZED를 반환한다")
     void invalidKeyReturns401() throws Exception {
-        mockMvc.perform(get("/api/v1/kiosk/courses/30000/current-session")
+        mockMvc.perform(get("/api/v1/kiosk/courses/30000-03/probe")
                         .header("X-Device-Id", TEST_DEVICE_ID)
                         .header("X-Device-Key", "wrong-secret-key"))
                 .andExpect(status().isUnauthorized())
@@ -113,7 +113,7 @@ class DeviceAuthIntegrationTest {
     @Test
     @DisplayName("비활성화된 단말기(isActive=false)는 401 DEVICE_UNAUTHORIZED를 반환한다")
     void inactiveDeviceReturns401() throws Exception {
-        mockMvc.perform(get("/api/v1/kiosk/courses/30000/current-session")
+        mockMvc.perform(get("/api/v1/kiosk/courses/30000-03/probe")
                         .header("X-Device-Id", "kiosk-disabled")
                         .header("X-Device-Key", TEST_RAW_KEY))
                 .andExpect(status().isUnauthorized())
@@ -123,7 +123,7 @@ class DeviceAuthIntegrationTest {
     @Test
     @DisplayName("배정되지 않은 다른 강의 경로(/courses/other-course/**)로 접근하면 403 COURSE_FORBIDDEN을 반환한다")
     void wrongCourseReturns403() throws Exception {
-        mockMvc.perform(get("/api/v1/kiosk/courses/99999/current-session")
+        mockMvc.perform(get("/api/v1/kiosk/courses/99999/probe")
                         .header("X-Device-Id", TEST_DEVICE_ID)
                         .header("X-Device-Key", TEST_RAW_KEY))
                 .andExpect(status().isForbidden())
@@ -134,7 +134,7 @@ class DeviceAuthIntegrationTest {
     @Test
     @DisplayName("정상 인증된 단말기는 200 OK와 함께 배정된 강의 경로에 접근할 수 있다")
     void validDevicePasses() throws Exception {
-        mockMvc.perform(get("/api/v1/kiosk/courses/30000/current-session")
+        mockMvc.perform(get("/api/v1/kiosk/courses/30000-03/probe")
                         .header("X-Device-Id", TEST_DEVICE_ID)
                         .header("X-Device-Key", TEST_RAW_KEY))
                 .andExpect(status().isOk())
@@ -147,7 +147,7 @@ class DeviceAuthIntegrationTest {
     @RequestMapping("/api/v1/kiosk")
     static class KioskProbeController {
 
-        @GetMapping("/courses/{courseId}/current-session")
+        @GetMapping("/courses/{courseId}/probe")
         public ResponseEntity<Map<String, Object>> probeSession(
                 @PathVariable String courseId,
                 @AuthenticationPrincipal DevicePrincipal principal) {
