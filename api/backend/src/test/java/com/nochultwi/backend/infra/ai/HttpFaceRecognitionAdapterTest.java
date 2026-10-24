@@ -48,7 +48,7 @@ class HttpFaceRecognitionAdapterTest {
         }
 
         byte[] faceBytes = Student.floatsToBytes(matchedVector);
-        EnrolledStudentDto student1 = new EnrolledStudentDto(1L, "2026920001", "테스트학생", "전자전기컴퓨터공학부", faceBytes);
+        EnrolledStudentDto student1 = new EnrolledStudentDto(1L, "2026920001", "테스트학생", "전자전기컴퓨터공학부", 2026, faceBytes);
 
         // AI 서버 응답 JSON 목업 (동일 벡터 반환 -> 코사인 유사도 1.0)
         StringBuilder jsonBuilder = new StringBuilder("{\"success\":true,\"embedding\":[");
@@ -81,7 +81,7 @@ class HttpFaceRecognitionAdapterTest {
         probeVector[1] = 1.0f;
 
         byte[] faceBytes = Student.floatsToBytes(studentVector);
-        EnrolledStudentDto student1 = new EnrolledStudentDto(1L, "2026920001", "테스트학생", "전자전기컴퓨터공학부", faceBytes);
+        EnrolledStudentDto student1 = new EnrolledStudentDto(1L, "2026920001", "테스트학생", "전자전기컴퓨터공학부", 2026, faceBytes);
 
         StringBuilder jsonBuilder = new StringBuilder("{\"success\":true,\"embedding\":[");
         for (int i = 0; i < 512; i++) {
@@ -107,7 +107,7 @@ class HttpFaceRecognitionAdapterTest {
                 .andExpect(method(HttpMethod.POST))
                 .andRespond(withSuccess("{\"success\":false,\"message\":\"NO_FACE_DETECTED\"}", MediaType.APPLICATION_JSON));
 
-        EnrolledStudentDto student = new EnrolledStudentDto(1L, "2026920001", "테스트학생", "전자전기컴퓨터공학부", new byte[512 * 4]);
+        EnrolledStudentDto student = new EnrolledStudentDto(1L, "2026920001", "테스트학생", "전자전기컴퓨터공학부", 2026, new byte[512 * 4]);
         Optional<EnrolledStudentDto> result = adapter.recognize(new byte[]{1, 2, 3}, List.of(student));
 
         assertThat(result).isEmpty();
@@ -121,7 +121,7 @@ class HttpFaceRecognitionAdapterTest {
                 .andExpect(method(HttpMethod.POST))
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR));
 
-        EnrolledStudentDto student = new EnrolledStudentDto(1L, "2026920001", "테스트학생", "전자전기컴퓨터공학부", new byte[512 * 4]);
+        EnrolledStudentDto student = new EnrolledStudentDto(1L, "2026920001", "테스트학생", "전자전기컴퓨터공학부", 2026, new byte[512 * 4]);
 
         assertThatThrownBy(() -> adapter.recognize(new byte[]{1, 2, 3}, List.of(student)))
                 .isInstanceOf(BusinessException.class)
@@ -141,11 +141,11 @@ class HttpFaceRecognitionAdapterTest {
 
         // 정상 학생 (512차원, 10자리 학번)
         byte[] validFaceBytes = Student.floatsToBytes(matchedVector);
-        EnrolledStudentDto validStudent = new EnrolledStudentDto(1L, "2026920001", "정상학생", "기계정보공학과", validFaceBytes);
+        EnrolledStudentDto validStudent = new EnrolledStudentDto(1L, "2026920001", "정상학생", "기계정보공학과", 2026, validFaceBytes);
 
         // 비정상 학생 (128차원 = 128*4 바이트, 차원 불일치, 10자리 학번)
         byte[] corruptFaceBytes = new byte[128 * 4];
-        EnrolledStudentDto corruptStudent = new EnrolledStudentDto(2L, "2026920002", "손상학생", "신소재공학과", corruptFaceBytes);
+        EnrolledStudentDto corruptStudent = new EnrolledStudentDto(2L, "2026920002", "손상학생", "신소재공학과", 2026, corruptFaceBytes);
 
         StringBuilder jsonBuilder = new StringBuilder("{\"success\":true,\"embedding\":[");
         for (int i = 0; i < 512; i++) {

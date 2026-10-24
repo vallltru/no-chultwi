@@ -84,6 +84,8 @@ class StudentIntegrationTest {
         assertThat(enrolledList).hasSize(2);
         assertThat(enrolledList).extracting(EnrolledStudentDto::studentNumber)
                 .containsExactlyInAnyOrder("2026990001", "2026990002");
+        assertThat(enrolledList).extracting(EnrolledStudentDto::admissionYear)
+                .containsOnly(2026);
     }
 
     @Test
