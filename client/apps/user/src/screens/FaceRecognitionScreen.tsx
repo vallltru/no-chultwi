@@ -16,6 +16,7 @@ type FaceRecognitionScreenProps = {
   result: FaceRecognitionResult | null
   onRetry: () => void
   onReturnHome: () => void
+  onForceNext: () => void
 }
 
 const resultMessages: Record<FaceRecognitionResult, { title: string; description: string }> = {
@@ -48,6 +49,7 @@ export const FaceRecognitionScreen = ({
   result,
   onRetry,
   onReturnHome,
+  onForceNext,
 }: FaceRecognitionScreenProps) => {
   const resultMessage = result ? resultMessages[result] : null
 
@@ -162,14 +164,21 @@ export const FaceRecognitionScreen = ({
             </Text>
           </VStack>
           {result && result !== 'success' && (
-            <HStack gap="spacingX.betweenChips">
-              <ActionButton layout="iconOnly" aria-label="홈으로 이동하기" variant="neutralWeak" onClick={onReturnHome}>
-                <Icon svg={<IconHouseLine />} />
-              </ActionButton>
-              <ActionButton type="button" variant="neutralSolid" onClick={onRetry}>
-                다시 시도하기
-              </ActionButton>
-            </HStack>
+            <VStack align="center" gap="x3">
+              <HStack gap="spacingX.betweenChips">
+                <ActionButton layout="iconOnly" aria-label="홈으로 이동하기" variant="neutralWeak" onClick={onReturnHome}>
+                  <Icon svg={<IconHouseLine />} />
+                </ActionButton>
+                <ActionButton type="button" variant="neutralSolid" onClick={onRetry}>
+                  다시 시도하기
+                </ActionButton>
+              </HStack>
+              {import.meta.env.DEV && (
+                <ActionButton type="button" variant="neutralWeak" onClick={onForceNext}>
+                  다음 화면으로 (개발용)
+                </ActionButton>
+              )}
+            </VStack>
           )}
         </VStack>
       </VStack>

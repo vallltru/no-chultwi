@@ -46,6 +46,13 @@ export const FaceRecognitionActivity: ActivityComponentType<'FaceRecognition'> =
       retryCamera()
     }, [retryCamera])
 
+    const goToConfirmation = useCallback(() => {
+      if (navigatedRef.current) return
+
+      navigatedRef.current = true
+      push('RecognitionConfirmation', {})
+    }, [push])
+
     useEffect(() => {
       if (!isActive) return
 
@@ -77,14 +84,11 @@ export const FaceRecognitionActivity: ActivityComponentType<'FaceRecognition'> =
       }
 
       const timer = window.setTimeout(() => {
-        if (navigatedRef.current) return
-
-        navigatedRef.current = true
-        push('RecognitionConfirmation', {})
+        goToConfirmation()
       }, RESULT_DISPLAY_DURATION_MS)
 
       return () => window.clearTimeout(timer)
-    }, [isActive, push, result])
+    }, [goToConfirmation, isActive, result])
 
     return (
       <KioskActivityFrame edgeToEdge lightOnly>
@@ -95,6 +99,7 @@ export const FaceRecognitionActivity: ActivityComponentType<'FaceRecognition'> =
           result={result}
           onRetry={retryRecognition}
           onReturnHome={returnHome}
+          onForceNext={goToConfirmation}
         />
       </KioskActivityFrame>
     )
