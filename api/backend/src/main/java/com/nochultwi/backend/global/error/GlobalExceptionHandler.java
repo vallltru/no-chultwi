@@ -98,6 +98,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(ErrorResponse.of(ErrorCode.INVALID_REQUEST, "요청 파라미터 타입이 올바르지 않습니다: " + e.getName()));
     }
 
+    /** 동시 중복 요청 등에 의한 DB 유니크 제약(UniqueConstraint) 위반 시 500 대신 409 Conflict 반환 */
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(org.springframework.dao.DataIntegrityViolationException e) {
+        log.warn("Database constraint or unique violation: {}", e.getMessage());
+        return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT)
+                .body(ErrorResponse.of(ErrorCode.INVALID_REQUEST, "이미 처리되었거나 중복된 요청이 존재합니다."));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpectedException(Exception e) {
         log.error("Unhandled exception", e);

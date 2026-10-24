@@ -50,6 +50,11 @@ public class KioskRecognitionService {
             throw new BusinessException(ErrorCode.INVALID_REQUEST, "얼굴 이미지가 제공되지 않았습니다.");
         }
 
+        // 명세 6.3: 최대 5MB 크기 제한 (초과 시 413 IMAGE_TOO_LARGE)
+        if (image.getSize() > 5 * 1024 * 1024) {
+            throw new BusinessException(ErrorCode.IMAGE_TOO_LARGE, "이미지 파일 크기는 5MB를 초과할 수 없습니다.");
+        }
+
         String contentType = image.getContentType();
         if (contentType == null || (!contentType.equalsIgnoreCase("image/jpeg") && !contentType.equalsIgnoreCase("image/png"))) {
             throw new BusinessException(ErrorCode.UNSUPPORTED_IMAGE_TYPE, "지원하지 않는 이미지 형식입니다. (JPEG/PNG 형식만 지원)");
@@ -121,7 +126,7 @@ public class KioskRecognitionService {
                 matchedStudent.studentNumber(),
                 matchedStudent.name(),
                 matchedStudent.department(),
-                2026,
+                matchedStudent.admissionYear(),
                 sessionId,
                 courseId,
                 deviceId,
@@ -132,7 +137,7 @@ public class KioskRecognitionService {
         CandidateDto candidateDto = new CandidateDto(
                 matchedStudent.name(),
                 matchedStudent.department(),
-                2026
+                matchedStudent.admissionYear()
         );
 
         log.info("Face recognized: studentNumber={}, name={}, sessionId={}, tokenIssued=true",
