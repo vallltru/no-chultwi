@@ -1,0 +1,401 @@
+.face-recognition {
+  --face-brand: var(--seed-color-bg-brand-solid);
+  --face-surface: var(--seed-color-bg-layer-default);
+  --face-camera-top: clamp(48px, 9svh, 128px);
+  --face-camera-size: clamp(144px, min(40vw, 29svh), 300px);
+  --face-camera-center: calc(var(--face-camera-top) + var(--face-camera-size) / 2);
+  --face-result-inset: calc(var(--face-camera-size) * 0.22);
+  --face-scan-duration: 1350ms;
+  --face-result-duration: 650ms;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.face-recognition__atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  animation: face-open 450ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.face-recognition__wash {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  /* Stationary color is faint; the denser edge band pulses separately. */
+  background:
+    radial-gradient(ellipse 65% 72vw at 50% -10vw,
+      color-mix(in srgb, var(--face-brand) 26%, transparent),
+      color-mix(in srgb, var(--face-brand) 21%, transparent) 35%,
+      color-mix(in srgb, var(--face-brand) 10%, transparent) 65%,
+      transparent),
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--face-brand) 4%, transparent),
+      color-mix(in srgb, var(--face-brand) 7%, transparent) 8%,
+      color-mix(in srgb, var(--face-brand) 4.5%, transparent) 16%,
+      transparent 30%, transparent 70%,
+      color-mix(in srgb, var(--face-brand) 4.5%, transparent) 84%,
+      color-mix(in srgb, var(--face-brand) 7%, transparent) 92%,
+      color-mix(in srgb, var(--face-brand) 4%, transparent));
+}
+
+.face-recognition__wash::before,
+.face-recognition__wash::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.face-recognition__wash::before {
+  background: radial-gradient(ellipse 60% 15vw at 50% 11vw,
+    color-mix(in srgb, var(--face-brand) 11%, transparent),
+    color-mix(in srgb, var(--face-brand) 7%, transparent) 45%,
+    transparent);
+  opacity: 0;
+  animation: face-top-pulse var(--face-scan-duration) ease-in-out infinite;
+}
+
+.face-recognition__wash::after {
+  /* The pulse gathers just inside the edges, peaking about 8% in. */
+  top: -54svh;
+  bottom: auto;
+  height: 120svh;
+  background: linear-gradient(90deg,
+      transparent,
+      color-mix(in srgb, var(--face-brand) 9%, transparent) 3.5%,
+      color-mix(in srgb, var(--face-brand) 18%, transparent) 8%,
+      color-mix(in srgb, var(--face-brand) 9%, transparent) 16%,
+      color-mix(in srgb, var(--face-brand) 1.5%, transparent) 28%,
+      transparent 32%, transparent 68%,
+      color-mix(in srgb, var(--face-brand) 1.5%, transparent) 72%,
+      color-mix(in srgb, var(--face-brand) 9%, transparent) 84%,
+      color-mix(in srgb, var(--face-brand) 18%, transparent) 92%,
+      color-mix(in srgb, var(--face-brand) 9%, transparent) 96.5%,
+      transparent);
+  mask-image: linear-gradient(transparent, rgb(0 0 0 / 20%) 15%, #000 40%, #000 50%, rgb(0 0 0 / 35%) 75%, transparent);
+  filter: blur(1vw);
+  opacity: 0;
+  animation:
+    face-edge-pulse var(--face-scan-duration) ease-in-out infinite,
+    face-edge-travel var(--face-scan-duration) linear infinite;
+}
+
+.face-recognition__scan-field,
+.face-recognition__result-field {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  transition: opacity 180ms ease-out;
+}
+
+.face-recognition__wave {
+  position: absolute;
+  left: 50%;
+  width: min(400vw, 300svh);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  /* The broad, feathered band thickens as the circle expands. */
+  background: radial-gradient(circle closest-side,
+    transparent 40%,
+    color-mix(in srgb, var(--face-surface) 3%, transparent) 50%,
+    color-mix(in srgb, var(--face-surface) 15%, transparent) 60%,
+    color-mix(in srgb, var(--face-surface) 45%, transparent) 70%,
+    color-mix(in srgb, var(--face-surface) 60%, transparent) 76%,
+    color-mix(in srgb, var(--face-surface) 40%, transparent) 83%,
+    color-mix(in srgb, var(--face-surface) 11%, transparent) 90%,
+    transparent 100%);
+  filter: blur(1.2vw);
+  transform-origin: center;
+  transform: translate(-50%, -50%) scale(0.04);
+  pointer-events: none;
+  opacity: 0;
+}
+
+.face-recognition__wave--scanning {
+  /* Keep the circle centered halfway between the top and camera preview. */
+  top: calc(var(--face-camera-top) / 2);
+  animation:
+    face-scan-wave var(--face-scan-duration) cubic-bezier(0.25, 0.2, 0.5, 1) infinite,
+    face-scan-wave-opacity var(--face-scan-duration) ease-in-out infinite;
+}
+
+.face-recognition__wave--result {
+  top: var(--face-camera-center);
+  animation: face-result-wave var(--face-result-duration) cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.face-recognition__content {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  padding-top: var(--face-camera-top);
+  padding-bottom: var(--seed-dimension-x5);
+}
+
+.face-recognition__hero {
+  position: relative;
+  flex-shrink: 0;
+  width: var(--face-camera-size);
+  aspect-ratio: 1;
+  animation: face-camera-enter 650ms linear 100ms both;
+}
+
+.face-recognition__camera {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--face-brand) 5%, var(--face-surface));
+  box-shadow: 0 0 0 5px var(--face-brand);
+  transform-origin: center;
+}
+
+.face-recognition__video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+  transform: scaleX(-1);
+  opacity: 0;
+  transition: opacity 300ms ease-out;
+}
+
+.face-recognition__camera[data-ready='true'] .face-recognition__video {
+  opacity: 1;
+}
+
+.face-recognition__camera-placeholder {
+  position: absolute;
+  inset: 0;
+}
+
+.face-recognition__result-icon {
+  position: absolute;
+  inset: var(--face-result-inset);
+  animation: face-result-icon 350ms cubic-bezier(0.16, 1, 0.3, 1) 60ms both;
+}
+
+.face-recognition__message {
+  flex-shrink: 0;
+  width: 100%;
+  margin-top: 0;
+  text-align: center;
+  transition: margin-top 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  animation: face-message-enter 300ms ease-out 180ms both;
+}
+
+.face-recognition__title,
+.face-recognition__description {
+  display: grid;
+  width: 100%;
+  margin: 0;
+}
+
+/* Overlap the two copies while the message block follows the visible icon edge. */
+.face-recognition__scanning-copy,
+.face-recognition__result-copy {
+  grid-area: 1 / 1;
+  align-self: center;
+  font: inherit;
+}
+
+.face-recognition__scanning-copy {
+  opacity: 1;
+  transition: opacity 200ms ease-out;
+}
+
+.face-recognition__result-copy {
+  animation: face-result-copy 250ms ease-out both;
+}
+
+.face-recognition__dots,
+.face-recognition__dot {
+  display: inline-block;
+}
+
+.face-recognition__dot {
+  opacity: 0.45;
+  animation: face-loading-dot 800ms ease-in-out infinite;
+}
+
+.face-recognition__dot:nth-child(2) {
+  animation-delay: 200ms;
+}
+
+.face-recognition__dot:nth-child(3) {
+  animation-delay: 400ms;
+}
+
+.face-recognition[data-phase='result'] .face-recognition__camera {
+  animation: face-camera-resolve 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.face-recognition[data-phase='result'] .face-recognition__message {
+  margin-top: calc(var(--face-result-inset) * -1);
+}
+
+.face-recognition[data-phase='result'] .face-recognition__scanning-copy {
+  opacity: 0;
+}
+
+.face-recognition[data-phase='result'] .face-recognition__scan-field {
+  opacity: 0;
+}
+
+.face-recognition[data-phase='result'] .face-recognition__wave--scanning {
+  /* Restart together with the edge pulse when the user retries. */
+  animation: none;
+}
+
+.face-recognition[data-phase='result'] .face-recognition__wash::before,
+.face-recognition[data-phase='result'] .face-recognition__wash::after {
+  animation: face-result-edge-pulse var(--face-result-duration) linear both;
+}
+
+.face-recognition[data-phase='result'] .face-recognition__wash::after {
+  transform: translateY(35svh);
+}
+
+.face-recognition[data-phase='result'] .face-recognition__dot,
+.face-recognition[data-active='false'] .face-recognition__dot,
+.face-recognition[data-active='false'] .face-recognition__wash::before,
+.face-recognition[data-active='false'] .face-recognition__wash::after,
+.face-recognition[data-active='false'] .face-recognition__wave {
+  animation-play-state: paused;
+}
+
+@keyframes face-open {
+  from { opacity: 0; clip-path: ellipse(12% 0% at 50% 0); }
+  to { opacity: 1; clip-path: ellipse(160% 150% at 50% 0); }
+}
+
+@keyframes face-scan-wave {
+  0%, 15% { transform: translate(-50%, -50%) scale(0.04); }
+  83%, 100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes face-scan-wave-opacity {
+  0%, 24%, 86%, 100% { opacity: 0; }
+  36%, 65% { opacity: 1; }
+}
+
+@keyframes face-edge-pulse {
+  0%, 93%, 100% { opacity: 0; }
+  22%, 63% { opacity: 1; }
+}
+
+@keyframes face-top-pulse {
+  0%, 48%, 100% { opacity: 0; }
+  22% { opacity: 1; }
+}
+
+@keyframes face-edge-travel {
+  0%, 8% { transform: translateY(0); }
+  22% { transform: translateY(8svh); }
+  45% { transform: translateY(35svh); }
+  63% { transform: translateY(55svh); }
+  93%, 100% { transform: translateY(80svh); }
+}
+
+@keyframes face-result-edge-pulse {
+  0%, 100% { opacity: 0; }
+  12% { opacity: 1; }
+  45% { opacity: 0.8; }
+}
+
+@keyframes face-result-wave {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.04); }
+  12% { opacity: 0.65; }
+  45% { opacity: 0.3; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes face-camera-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(calc(var(--face-camera-center) * -1)) scale(0.35);
+    filter: blur(8px);
+  }
+  8% {
+    opacity: 0.6;
+    transform: translateY(calc(var(--face-camera-center) * -0.8)) scale(0.41);
+    filter: blur(2px);
+  }
+  31% {
+    opacity: 1;
+    transform: translateY(calc(var(--face-camera-center) * -0.24)) scale(0.66);
+    filter: blur(0);
+  }
+  54% { transform: translateY(calc(var(--face-camera-center) * -0.03)) scale(0.92); }
+  77% { transform: translateY(0) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+@keyframes face-message-enter {
+  from { opacity: 0; transform: translateY(-8px); filter: blur(4px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+@keyframes face-camera-resolve {
+  0% { opacity: 1; transform: scale(1); }
+  55% { opacity: 0.45; }
+  100% { opacity: 0; transform: scale(0.48); }
+}
+
+@keyframes face-result-icon {
+  0% { opacity: 0; transform: scale(0.8); }
+  65% { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes face-result-copy {
+  from { opacity: 0; transform: translateY(1.4em); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes face-loading-dot {
+  0%, 50%, 100% { opacity: 0.45; }
+  25% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .face-recognition__atmosphere,
+  .face-recognition__hero,
+  .face-recognition__message,
+  .face-recognition__result-icon,
+  .face-recognition__result-copy,
+  .face-recognition__dot {
+    animation: none;
+    opacity: 1;
+  }
+
+  .face-recognition__wave {
+    animation: none;
+  }
+
+  .face-recognition__wash::before,
+  .face-recognition__wash::after,
+  .face-recognition[data-phase='result'] .face-recognition__wash::before,
+  .face-recognition[data-phase='result'] .face-recognition__wash::after {
+    animation: none;
+    opacity: 0;
+  }
+
+  .face-recognition__scanning-copy,
+  .face-recognition__scan-field,
+  .face-recognition__message,
+  .face-recognition__video {
+    transition: none;
+  }
+
+  .face-recognition[data-phase='result'] .face-recognition__camera {
+    animation: none;
+    opacity: 0;
+  }
+}
