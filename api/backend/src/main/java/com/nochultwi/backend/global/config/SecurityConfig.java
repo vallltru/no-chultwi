@@ -1,5 +1,6 @@
 package com.nochultwi.backend.global.config;
 
+import com.nochultwi.backend.global.security.device.DeviceAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,6 +9,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
@@ -25,9 +27,13 @@ public class SecurityConfig {
     private static final String CONTENT_SECURITY_POLICY = "default-src 'none'; frame-ancestors 'none'";
 
     private final HandlerExceptionResolver handlerExceptionResolver;
+    private final DeviceAuthenticationFilter deviceAuthenticationFilter;
 
-    public SecurityConfig(@Qualifier("handlerExceptionResolver") HandlerExceptionResolver handlerExceptionResolver) {
+    public SecurityConfig(
+            @Qualifier("handlerExceptionResolver") HandlerExceptionResolver handlerExceptionResolver,
+            DeviceAuthenticationFilter deviceAuthenticationFilter) {
         this.handlerExceptionResolver = handlerExceptionResolver;
+        this.deviceAuthenticationFilter = deviceAuthenticationFilter;
     }
 
     @Bean
@@ -50,7 +56,9 @@ public class SecurityConfig {
                         .accessDeniedHandler((request, response, accessDeniedException) ->
                                 handlerExceptionResolver.resolveException(request, response, null, accessDeniedException)))
                 .authorizeHttpRequests(authorize -> authorize
-                        .anyRequest().authenticated());
+                        .requestMatchers("/api/v1/kiosk/**").hasAuthority("ROLE_DEVICE")
+                        .anyRequest().authenticated())
+                .addFilterBefore(deviceAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
