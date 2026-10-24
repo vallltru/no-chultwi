@@ -5,11 +5,13 @@ import type { ReactNode } from 'react'
 interface KioskActivityFrameProps {
   children: ReactNode
   lightOnly?: boolean
+  edgeToEdge?: boolean
 }
 
 export function KioskActivityFrame({
   children,
   lightOnly = false,
+  edgeToEdge = false,
 }: KioskActivityFrameProps) {
   return (
     <AppScreen.Root
@@ -21,8 +23,8 @@ export function KioskActivityFrame({
       <AppScreen.Layer>
         <VStack
           height="full"
-          paddingX="x5"
-          paddingY="x5"
+          paddingX={edgeToEdge ? 0 : 'x5'}
+          paddingY={edgeToEdge ? 0 : 'x5'}
           style={{ boxSizing: 'border-box' }}
         >
           {children}
