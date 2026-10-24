@@ -2,7 +2,7 @@ package com.nochultwi.backend.infra.ai;
 
 import com.nochultwi.backend.domain.student.dto.EnrolledStudentDto;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -10,11 +10,11 @@ import java.util.Optional;
 
 /**
  * 로컬 개발, 테스트 및 모의 시연 환경을 위한 모의 AI 얼굴인식 어댑터.
- * 실제 AI 모델 서버(FastAPI / InsightFace ONNX) 구현체가 스프링 빈으로 등록되면 자동으로 대체됩니다.
+ * ai.face.enabled=false (기본값)일 때 활성화되어 단위 테스트 및 빌드가 독립적으로 동작합니다.
  */
 @Slf4j
 @Component
-@ConditionalOnMissingBean(type = "com.nochultwi.backend.infra.ai.HttpFaceRecognitionAdapter")
+@ConditionalOnProperty(name = "ai.face.enabled", havingValue = "false", matchIfMissing = true)
 public class StubFaceRecognitionAdapter implements FaceRecognitionPort {
 
     @Override
