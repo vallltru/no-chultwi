@@ -66,11 +66,26 @@ importers:
   apps/user:
     dependencies:
       '@seed-design/css':
-        specifier: ^2.8.3
-        version: 2.8.3
+        specifier: ^2.9.2
+        version: 2.9.2
       '@seed-design/react':
         specifier: ^2.5.0
-        version: 2.5.0(@seed-design/css@2.8.3)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(embla-carousel@8.6.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        version: 2.5.0(@seed-design/css@2.9.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(embla-carousel@8.6.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/stackflow':
+        specifier: ^2.0.6
+        version: 2.0.6(@seed-design/css@2.9.2)(@stackflow/core@3.1.0)(@stackflow/react@2.1.4(@stackflow/config@2.0.0)(@stackflow/core@3.1.0)(@types/react@19.3.0)(react@19.3.0))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@stackflow/config':
+        specifier: ^2.0.0
+        version: 2.0.0
+      '@stackflow/core':
+        specifier: ^3.1.0
+        version: 3.1.0
+      '@stackflow/plugin-renderer-basic':
+        specifier: ^1.1.16
+        version: 1.1.16(@stackflow/core@3.1.0)(@stackflow/react@2.1.4(@stackflow/config@2.0.0)(@stackflow/core@3.1.0)(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react@19.3.0)
+      '@stackflow/react':
+        specifier: ^2.1.4
+        version: 2.1.4(@stackflow/config@2.0.0)(@stackflow/core@3.1.0)(@types/react@19.3.0)(react@19.3.0)
       react:
         specifier: ^19.2.8
         version: 19.3.0
@@ -83,7 +98,7 @@ importers:
         version: 10.0.1(eslint@10.11.0)
       '@seed-design/vite-plugin':
         specifier: ^2.1.0
-        version: 2.1.0(@seed-design/css@2.8.3)(vite@8.3.0(@types/node@24.13.6))
+        version: 2.1.0(@seed-design/css@2.9.2)(vite@8.3.0(@types/node@24.13.6))
       '@types/node':
         specifier: ^24.13.3
         version: 24.13.6
@@ -513,6 +528,9 @@ packages:
   '@seed-design/css@2.8.3':
     resolution: {integrity: sha512-cvRSaWY57W7pyFhP9WXYINAUeC8+dCvsUb79yd0v0nhnrtXFOsQSYJ4AmXtitfgspGZk75rc7dwsTzcu9EQzgQ==}
 
+  '@seed-design/css@2.9.2':
+    resolution: {integrity: sha512-I0hg3e8Awr4gR+XdcoEvXtZlYqITb0zFJ3pLL9t/wrWehs33OHolooAbfgO9fTziE66Zat77XZrkOIZpZeW3Dg==}
+
   '@seed-design/dom-utils@2.1.0':
     resolution: {integrity: sha512-nbghUGIT02bKMD4JsTSjU8RamUlOVSZkWy/iK7I56B/zQu8ZN4aLtQCxmg51e/oog2p1aTikNww1WUJMTYstJA==}
     peerDependencies:
@@ -657,6 +675,12 @@ packages:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
 
+  '@seed-design/react-primitive@2.0.2':
+    resolution: {integrity: sha512-EPUogt8zik+oyP2lhmMKohydOSZH1xZbwrQoWQi0rN1pGV7agMFhOZP/XouFDBqey/q4VyizTYqHh4hioNROVg==}
+    peerDependencies:
+      react: '>=18.0.0'
+      react-dom: '>=18.0.0'
+
   '@seed-design/react-progress@2.0.1':
     resolution: {integrity: sha512-JpAflQSQ9FX9w2lIhn7FaU/q4Px4Ktc3Ea8iLd3xSMFrQuJLrH/8ha8SYXDBgZyN3MLj6A9bH9cHSSrXVJTTEw==}
     peerDependencies:
@@ -779,11 +803,50 @@ packages:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
 
+  '@seed-design/stackflow@2.0.6':
+    resolution: {integrity: sha512-UevuoG61Jqq6AER2GU7vo54rDLiJKQFta6iyDxRkxpIqsmlgQ95lsL201kZUHe6yT+hk0L4Kufi4K1pzXgV04Q==}
+    peerDependencies:
+      '@seed-design/css': ^2.9.0 || ^3.0.0
+      '@stackflow/core': '>=1.1.0'
+      '@stackflow/react': '>=1.4.1'
+      react: '>=18.0.0'
+      react-dom: '>=18.0.0'
+
   '@seed-design/vite-plugin@2.1.0':
     resolution: {integrity: sha512-1xsY0byqlM2oayCD1kufi/ggoBa+rsADtGtvbRH7meYaqz+3Jdp2TH9avPUPE3DWtf4M8Nv9KRmE3vukrBFhhA==}
     peerDependencies:
       '@seed-design/css': ^2.0.0
       vite: ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0
+
+  '@stackflow/config@2.0.0':
+    resolution: {integrity: sha512-EmRyxf124SCuRxx1WhL0leq6WwV7yloejr8WbLq+QhoGFWWRfRY5SyMnvk2zWOuLsUDIDaQWbmFhO+D+xbQorA==}
+
+  '@stackflow/core@3.1.0':
+    resolution: {integrity: sha512-KnpBrzmUHQQK20oD99eswspAtLxgGK0iu5LLeLJ5RJrWkzv2X77i0OymaT5Fr4Lt8CBYfYWGq5VUFJLo3idHKw==}
+
+  '@stackflow/plugin-renderer-basic@1.1.16':
+    resolution: {integrity: sha512-OiDuHANNWZi4xJ8Jz7MDOAppuE2LX0/esaPdJgEE3RpglY7P8edmZWgcbni9yp+MF77z2bImp7aDqnhJWyO7GA==}
+    peerDependencies:
+      '@stackflow/core': ^2.0.0 || ^3.0.0
+      '@stackflow/react': ^2.0.0
+      '@types/react': '>=16.8.0'
+      react: '>=16.8.0'
+
+  '@stackflow/react-ui-core@1.3.8':
+    resolution: {integrity: sha512-7DX7m5MT1lSl7VubTczr6VgxLnAsUKzffsuiocZUEL9iiwYnzf3qaL0JTHAqA5Q2q/G4qzZGJ9wmSAN7dqAcnw==}
+    peerDependencies:
+      '@stackflow/core': ^1.1.0-canary.0 || ^2.0.0 || ^3.0.0
+      '@stackflow/react': ^1.3.2-canary.0 || ^2.0.0
+      '@types/react': '>=16.8.0'
+      react: '>=16.8.0'
+
+  '@stackflow/react@2.1.4':
+    resolution: {integrity: sha512-vp1ap4bcGnQShY4RdNKOP98eglQhUJL2XvW+vr9s7ACe6J2G3e8eUfR5OMbJRMcXcN/KD6npiGV2R1y2P99DCg==}
+    peerDependencies:
+      '@stackflow/config': ^2.0.0
+      '@stackflow/core': ^3.1.0
+      '@types/react': '>=16.8.0'
+      react: '>=16.8.0'
 
   '@swc/helpers@0.5.23':
     resolution: {integrity: sha512-5lSsMOTXURePglDfvuAQUqkGek9Hg2kksOYay2m0+XR++b2NWYL/4sWyuvVBIs8oKnJaxkdi9whaL/sqN13afw==}
@@ -1297,6 +1360,9 @@ packages:
     peerDependencies:
       react: ^19.3.0
 
+  react-fast-compare@3.2.2:
+    resolution: {integrity: sha512-nsO+KSNgo1SbJqJEYRE9ERzo7YtYbou/OqjSQKxV7jcKox7+usiUVZOAC+XnDOABXggQTno0Y1CpVnuWEc1boQ==}
+
   react@19.3.0:
     resolution: {integrity: sha512-E8LUcbtBWt20bbl2YoHfx4ZDBdxVTfOKtCZn9cDSJ4l6/nuoApcpIBcj47t2wZoVX8g2ZHuMHbiShgCR1T5Sog==}
     engines: {node: '>=0.10.0'}
@@ -1795,6 +1861,8 @@ snapshots:
 
   '@seed-design/css@2.8.3': {}
 
+  '@seed-design/css@2.9.2': {}
+
   '@seed-design/dom-utils@2.1.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
     dependencies:
       clsx: 2.1.1
@@ -2057,6 +2125,14 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
+  '@seed-design/react-primitive@2.0.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+    dependencies:
+      '@radix-ui/react-slot': 1.3.3(@types/react@19.3.0)(react@19.3.0)
+      react: 19.3.0
+      react-dom: 19.3.0(react@19.3.0)
+    transitivePeerDependencies:
+      - '@types/react'
+
   '@seed-design/react-progress@2.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
     dependencies:
       '@seed-design/dom-utils': 2.1.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -2105,6 +2181,16 @@ snapshots:
       '@radix-ui/react-compose-refs': 1.1.5(@types/react@19.3.0)(react@19.3.0)
       '@radix-ui/react-slot': 1.3.3(@types/react@19.3.0)(react@19.3.0)
       '@seed-design/css': 2.8.3
+      react: 19.3.0
+      react-dom: 19.3.0(react@19.3.0)
+    transitivePeerDependencies:
+      - '@types/react'
+
+  '@seed-design/react-scale-feedback@1.0.0(@seed-design/css@2.9.2)(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+    dependencies:
+      '@radix-ui/react-compose-refs': 1.1.5(@types/react@19.3.0)(react@19.3.0)
+      '@radix-ui/react-slot': 1.3.3(@types/react@19.3.0)(react@19.3.0)
+      '@seed-design/css': 2.9.2
       react: 19.3.0
       react-dom: 19.3.0(react@19.3.0)
     transitivePeerDependencies:
@@ -2323,10 +2409,115 @@ snapshots:
       - '@types/react-dom'
       - embla-carousel
 
+  '@seed-design/react@2.5.0(@seed-design/css@2.9.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(embla-carousel@8.6.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+    dependencies:
+      '@radix-ui/react-compose-refs': 1.1.5(@types/react@19.3.0)(react@19.3.0)
+      '@radix-ui/react-slot': 1.3.3(@types/react@19.3.0)(react@19.3.0)
+      '@radix-ui/react-use-controllable-state': 1.2.2(@types/react@19.3.0)(react@19.3.0)
+      '@radix-ui/react-use-layout-effect': 1.1.4(@types/react@19.3.0)(react@19.3.0)
+      '@seed-design/css': 2.9.2
+      '@seed-design/dom-utils': 2.1.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-accordion': 1.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-attachment-display': 1.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-avatar': 2.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-checkbox': 2.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-collapsible': 1.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-date-picker': 1.2.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-dialog': 2.0.3(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-drawer': 2.0.6(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-field': 2.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-field-button': 2.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-fieldset': 1.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-file-upload': 1.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-image': 1.1.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-menu': 2.0.2(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-middle-truncate': 1.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-navigation-menu': 2.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-popover': 2.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-portal': 2.0.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-primitive': 2.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-progress': 2.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-pull-to-refresh': 2.1.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-quantity-picker': 1.0.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-radio-group': 2.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-scale-feedback': 1.0.0(@seed-design/css@2.9.2)(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-segmented-control': 2.0.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-select': 1.0.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-side-navigation': 1.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-slider': 2.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-snackbar': 2.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-switch': 2.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-tabs': 2.0.1(@types/react@19.3.0)(embla-carousel@8.6.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-text-field': 2.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-time-picker': 1.0.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-toggle': 2.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-tooltip': 1.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-wheel-picker': 1.1.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      clsx: 2.1.1
+      react: 19.3.0
+      react-dom: 19.3.0(react@19.3.0)
+      unicode-segmenter: 0.17.3
+    transitivePeerDependencies:
+      - '@types/react'
+      - '@types/react-dom'
+      - embla-carousel
+
+  '@seed-design/stackflow@2.0.6(@seed-design/css@2.9.2)(@stackflow/core@3.1.0)(@stackflow/react@2.1.4(@stackflow/config@2.0.0)(@stackflow/core@3.1.0)(@types/react@19.3.0)(react@19.3.0))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+    dependencies:
+      '@radix-ui/react-compose-refs': 1.1.5(@types/react@19.3.0)(react@19.3.0)
+      '@radix-ui/react-focus-scope': 1.1.16(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@radix-ui/react-slot': 1.3.3(@types/react@19.3.0)(react@19.3.0)
+      '@radix-ui/react-use-callback-ref': 1.1.4(@types/react@19.3.0)(react@19.3.0)
+      '@seed-design/css': 2.9.2
+      '@seed-design/dom-utils': 2.1.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@seed-design/react-primitive': 2.0.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@stackflow/core': 3.1.0
+      '@stackflow/react': 2.1.4(@stackflow/config@2.0.0)(@stackflow/core@3.1.0)(@types/react@19.3.0)(react@19.3.0)
+      '@stackflow/react-ui-core': 1.3.8(@stackflow/core@3.1.0)(@stackflow/react@2.1.4(@stackflow/config@2.0.0)(@stackflow/core@3.1.0)(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react@19.3.0)
+      clsx: 2.1.1
+      react: 19.3.0
+      react-dom: 19.3.0(react@19.3.0)
+    transitivePeerDependencies:
+      - '@types/react'
+      - '@types/react-dom'
+
   '@seed-design/vite-plugin@2.1.0(@seed-design/css@2.8.3)(vite@8.3.0(@types/node@24.13.6))':
     dependencies:
       '@seed-design/css': 2.8.3
       vite: 8.3.0(@types/node@24.13.6)
+
+  '@seed-design/vite-plugin@2.1.0(@seed-design/css@2.9.2)(vite@8.3.0(@types/node@24.13.6))':
+    dependencies:
+      '@seed-design/css': 2.9.2
+      vite: 8.3.0(@types/node@24.13.6)
+
+  '@stackflow/config@2.0.0': {}
+
+  '@stackflow/core@3.1.0':
+    dependencies:
+      react-fast-compare: 3.2.2
+
+  '@stackflow/plugin-renderer-basic@1.1.16(@stackflow/core@3.1.0)(@stackflow/react@2.1.4(@stackflow/config@2.0.0)(@stackflow/core@3.1.0)(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react@19.3.0)':
+    dependencies:
+      '@stackflow/core': 3.1.0
+      '@stackflow/react': 2.1.4(@stackflow/config@2.0.0)(@stackflow/core@3.1.0)(@types/react@19.3.0)(react@19.3.0)
+      '@types/react': 19.3.0
+      react: 19.3.0
+
+  '@stackflow/react-ui-core@1.3.8(@stackflow/core@3.1.0)(@stackflow/react@2.1.4(@stackflow/config@2.0.0)(@stackflow/core@3.1.0)(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react@19.3.0)':
+    dependencies:
+      '@stackflow/core': 3.1.0
+      '@stackflow/react': 2.1.4(@stackflow/config@2.0.0)(@stackflow/core@3.1.0)(@types/react@19.3.0)(react@19.3.0)
+      '@types/react': 19.3.0
+      react: 19.3.0
+
+  '@stackflow/react@2.1.4(@stackflow/config@2.0.0)(@stackflow/core@3.1.0)(@types/react@19.3.0)(react@19.3.0)':
+    dependencies:
+      '@stackflow/config': 2.0.0
+      '@stackflow/core': 3.1.0
+      '@types/react': 19.3.0
+      react: 19.3.0
+      react-fast-compare: 3.2.2
 
   '@swc/helpers@0.5.23':
     dependencies:
@@ -2807,6 +2998,8 @@ snapshots:
     dependencies:
       react: 19.3.0
       scheduler: 0.28.0
+
+  react-fast-compare@3.2.2: {}
 
   react@19.3.0: {}
 
