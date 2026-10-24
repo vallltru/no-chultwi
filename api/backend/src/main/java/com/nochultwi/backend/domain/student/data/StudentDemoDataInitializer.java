@@ -41,12 +41,17 @@ public class StudentDemoDataInitializer implements CommandLineRunner {
     private final Clock clock;
 
     private static final String[] FIRST_NAMES = {
-            "민준", "서준", "도윤", "예준", "시우", "하준", "지호", "지후", "준우", "준서",
-            "서연", "서윤", "지우", "서현", "하은", "하윤", "민서", "지유", "윤서", "지아",
-            "채원", "다은", "수아", "지민", "지원", "예은", "소율", "예원", "시은", "수빈"
+            "도현", "태양", "유진", "시현", "채린", "보검", "나래", "우성", "정우", "원빈",
+            "유나", "지안", "수호", "태민", "아린", "다현", "소희", "선우", "현우", "민재",
+            "동하", "지석", "예린", "하린", "서율", "가온", "태린", "시온", "재윤", "찬우"
     };
 
-    private static final String[] LAST_NAMES = {"김", "이", "박", "최", "정", "강", "조", "윤", "장", "임"};
+    private static final String[] LAST_NAMES = {"김", "이", "박", "최", "정", "강", "조", "윤", "장", "임", "한", "오", "서", "신", "권"};
+
+    private static final String[] DEPARTMENTS = {
+            "전자전기컴퓨터공학부", "컴퓨터과학부", "인공지능학과", "기계정보공학과", "신소재공학과",
+            "토목공학과", "도시행정학과", "경영학부", "통계학과", "화학공학과"
+    };
 
     @Override
     @Transactional
@@ -61,8 +66,10 @@ public class StudentDemoDataInitializer implements CommandLineRunner {
         Random random = new Random(20261025L); // 재현 가능한 고정 시드
 
         for (int i = 0; i < DEMO_STUDENT_COUNT; i++) {
+            // 숫자 10자리 학번 (예: 2026920001)
             String studentNumber = String.format("202692%04d", i + 1);
             String name = LAST_NAMES[i % LAST_NAMES.length] + FIRST_NAMES[i % FIRST_NAMES.length];
+            String department = DEPARTMENTS[i % DEPARTMENTS.length];
 
             // 512차원 정규화된(L2-normalized) 더미 얼굴 특징 벡터 생성
             float[] vector = generateNormalizedVector(512, random);
@@ -71,7 +78,7 @@ public class StudentDemoDataInitializer implements CommandLineRunner {
             Student student = Student.builder()
                     .studentNumber(studentNumber)
                     .name(name)
-                    .department("컴퓨터과학부")
+                    .department(department)
                     .admissionYear(2026)
                     .faceVector(faceVectorBytes)
                     .build();

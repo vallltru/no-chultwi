@@ -1,6 +1,6 @@
 # 얼굴 인식 출석 API 연동 명세
 
-> 백엔드 전달용 초안 · 2026-10-22 · 참고: 「설계계획서 2026920007 김민준」(2026-09-16), 이 프로젝트의 「Set up attendance screen flow」 대화, 현재 저장소
+> 백엔드 전달용 초안 · 2026-10-22 · 참고: 「캡스톤 설계계획서」(2026-09-16), 이 프로젝트의 「Set up attendance screen flow」 대화, 현재 저장소
 >
 > **상태 표기**: `확정`은 설계 계획서, 이전 대화 또는 이번 대화에서 명시된 요구, `제안`은 연동을 위해 이 문서에서 정한 계약, `확인 필요`는 실제 운영값이나 구현 세부 결정이 필요한 사항이다. 제안과 확인 필요 항목은 기존 백엔드 구현 사항이 아니다.
 
@@ -121,7 +121,7 @@
   "recognitionToken": "opaque-short-lived-token",
   "expiresAt": "2026-10-22T09:04:00+09:00",
   "candidate": {
-    "name": "김민준",
+    "name": "홍길동",
     "department": "컴퓨터과학부",
     "admissionYear": 2026
   }
@@ -177,7 +177,7 @@ Idempotency-Key: 2c265719-d4c5-4aba-a69d-33844792f0b8
   "items": [
     {
       "studentId": "student-demo-01",
-      "name": "김민준",
+      "name": "홍길동",
       "studentNumber": "2026920007",
       "status": "PRESENT",
       "checkedInAt": "2026-10-22T09:03:15+09:00",

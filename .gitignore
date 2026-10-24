@@ -52,3 +52,8 @@ replay_pid*
 *.tmp
 *.temp
 .cache/
+
+# AI weights and user test data (biometrics)
+*.onnx
+api/test/
+api/ai/models/
