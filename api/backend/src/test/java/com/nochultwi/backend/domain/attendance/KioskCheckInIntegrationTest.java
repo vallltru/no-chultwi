@@ -120,7 +120,7 @@ class KioskCheckInIntegrationTest {
     @DisplayName("지각 시각 전 출석 체크인 시 201 Created와 PRESENT 상태를 반환하고 DB에 기록된다")
     void checkInSuccessPresentReturns201() throws Exception {
         RecognitionTokenStore.RecognitionTokenData tokenData = tokenStore.createToken(
-                TEST_STUDENT_ID, "2026920001", "김민준", "컴퓨터과학부", 2026,
+                TEST_STUDENT_ID, "2026920001", "테스트학생", "컴퓨터과학부", 2026,
                 SESSION_ID, COURSE_ID, TEST_DEVICE_ID, 60
         );
 
@@ -160,7 +160,7 @@ class KioskCheckInIntegrationTest {
                 .build());
 
         RecognitionTokenStore.RecognitionTokenData tokenData = tokenStore.createToken(
-                TEST_STUDENT_ID, "2026920001", "김민준", "컴퓨터과학부", 2026,
+                TEST_STUDENT_ID, "2026920001", "테스트학생", "컴퓨터과학부", 2026,
                 lateSessionId, COURSE_ID, TEST_DEVICE_ID, 60
         );
 
@@ -182,7 +182,7 @@ class KioskCheckInIntegrationTest {
     @DisplayName("동일한 멱등성 키로 재시도 시 토큰이 소모되었더라도 최초 201 응답과 동일한 결과를 반환한다")
     void checkInIdempotentReplayReturnsSame201() throws Exception {
         RecognitionTokenStore.RecognitionTokenData tokenData = tokenStore.createToken(
-                TEST_STUDENT_ID, "2026920001", "김민준", "컴퓨터과학부", 2026,
+                TEST_STUDENT_ID, "2026920001", "테스트학생", "컴퓨터과학부", 2026,
                 SESSION_ID, COURSE_ID, TEST_DEVICE_ID, 60
         );
 
@@ -217,7 +217,7 @@ class KioskCheckInIntegrationTest {
     @DisplayName("동일한 멱등성 키로 다른 본문 전송 시 409 IDEMPOTENCY_KEY_REUSED를 반환한다")
     void checkInIdempotentKeyReusedWithDifferentBodyReturns409() throws Exception {
         RecognitionTokenStore.RecognitionTokenData token1 = tokenStore.createToken(
-                TEST_STUDENT_ID, "2026920001", "김민준", "컴퓨터과학부", 2026,
+                TEST_STUDENT_ID, "2026920001", "테스트학생", "컴퓨터과학부", 2026,
                 SESSION_ID, COURSE_ID, TEST_DEVICE_ID, 60
         );
 
@@ -248,7 +248,7 @@ class KioskCheckInIntegrationTest {
     @DisplayName("이미 소모된 토큰으로 다른 요청 전송 시 409 RECOGNITION_CONSUMED를 반환한다")
     void checkInConsumedTokenReturns409() throws Exception {
         RecognitionTokenStore.RecognitionTokenData tokenData = tokenStore.createToken(
-                TEST_STUDENT_ID, "2026920001", "김민준", "컴퓨터과학부", 2026,
+                TEST_STUDENT_ID, "2026920001", "테스트학생", "컴퓨터과학부", 2026,
                 SESSION_ID, COURSE_ID, TEST_DEVICE_ID, 60
         );
 
@@ -290,7 +290,7 @@ class KioskCheckInIntegrationTest {
     void checkInDeviceMismatchReturns409() throws Exception {
         // device-A에 발급된 토큰
         RecognitionTokenStore.RecognitionTokenData tokenData = tokenStore.createToken(
-                TEST_STUDENT_ID, "2026920001", "김민준", "컴퓨터과학부", 2026,
+                TEST_STUDENT_ID, "2026920001", "테스트학생", "컴퓨터과학부", 2026,
                 SESSION_ID, COURSE_ID, "other-device-id", 60
         );
 
@@ -317,7 +317,7 @@ class KioskCheckInIntegrationTest {
                 .build());
 
         RecognitionTokenStore.RecognitionTokenData tokenData = tokenStore.createToken(
-                TEST_STUDENT_ID, "2026920001", "김민준", "컴퓨터과학부", 2026,
+                TEST_STUDENT_ID, "2026920001", "테스트학생", "컴퓨터과학부", 2026,
                 SESSION_ID, COURSE_ID, TEST_DEVICE_ID, 60
         );
 
