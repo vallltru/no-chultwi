@@ -3,7 +3,7 @@ import './App.css'
 
 function App() {
   return (
-    <main className="app">
+    <main className="app" onContextMenu={(event) => event.preventDefault()}>
       <Stack />
     </main>
   )

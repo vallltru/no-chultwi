@@ -14,18 +14,20 @@ export const AttendanceCompleteScreen = ({
   onConfirm,
 }: AttendanceCompleteScreenProps) => {
   return (
-    <VStack height="full" width="full">
+    <VStack className="attendance-complete" height="full" width="full">
       <Box flexGrow={2} />
 
       <VStack width="full" align="center" gap="x8">
-        <Box className="attendance-complete__icon" width="x16" height="x16" aria-hidden="true">
-          <Icon svg={<IconCheckmarkCircleFill />} size="full" color="fg.brand" />
+        <Box className="attendance-complete__icon" width="80px" height="80px" aria-hidden="true">
+          <Box className="attendance-complete__checkmark" width="full" height="full">
+            <Icon svg={<IconCheckmarkCircleFill />} size="full" color="fg.brand" />
+          </Box>
         </Box>
         <VStack align="center" gap="x2">
-          <Text as="h1" textStyle="screenTitle" color="fg.neutral" align="center">
+          <Text as="h1" textStyle="t12Bold" color="fg.neutral" align="center">
             출결 확인 완료
           </Text>
-          <Text as="p" textStyle="t5Regular" color="fg.neutralSubtle" align="center">
+          <Text as="p" textStyle="t6Regular" color="fg.neutralSubtle" align="center">
             {completedTimeLabel}으로 출결 확인을 완료했어요
           </Text>
         </VStack>

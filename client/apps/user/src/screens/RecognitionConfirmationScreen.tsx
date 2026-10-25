@@ -20,7 +20,7 @@ export const RecognitionConfirmationScreen = ({
       <Box flexGrow={1} />
 
       <VStack width="full" align="center" gap="x6">
-        <Text as="h1" textStyle="screenTitle" color="fg.neutral" align="center">
+        <Text as="h1" textStyle="t12Bold" color="fg.neutral" align="center">
           {student.name} 학생으로<br />출결 확인 할까요?
         </Text>
 

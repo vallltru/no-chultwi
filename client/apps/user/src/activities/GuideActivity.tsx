@@ -7,7 +7,7 @@ export const GuideActivity: ActivityComponentType<'Guide'> = () => {
   const returnHome = useReturnHome()
 
   return (
-    <KioskActivityFrame>
+    <KioskActivityFrame lightOnly>
       <GuideScreen onConfirm={returnHome} />
     </KioskActivityFrame>
   )

@@ -1,0 +1,144 @@
+.home-start-button {
+  --home-start-fill: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--seed-color-palette-uos-blue-light) 72%, var(--seed-color-palette-uos-blue-soft)) 0%,
+    var(--seed-color-palette-uos-blue) 44%,
+    var(--seed-color-palette-uos-blue-light) 78%,
+    color-mix(in srgb, var(--seed-color-palette-uos-blue-light) 80%, var(--seed-color-palette-uos-blue-soft)) 100%
+  );
+  --home-start-cycle: 2400ms;
+  --home-start-delay: 300ms;
+
+  isolation: isolate;
+  transform-origin: center;
+}
+
+.home-start-button::before,
+.home-start-button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--home-start-fill);
+  pointer-events: none;
+}
+
+.home-start-button::before {
+  z-index: -2;
+  opacity: 0.4;
+  filter: blur(18px);
+  transform: translateY(18px);
+}
+
+.home-start-button::after {
+  z-index: -1;
+}
+
+.home-start-button__ripple {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.home-start-button__ripple::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 6%;
+  width: 200%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle closest-side,
+    rgb(255 255 255) 0%,
+    rgb(255 255 255 / 0) 100%
+  );
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.006);
+}
+
+.home-start-button__label,
+.home-start-button .seed-suffix-icon {
+  position: relative;
+  z-index: 1;
+}
+
+.home-start-button[data-attention='true'] {
+  animation: home-start-press var(--home-start-cycle) var(--home-start-delay) infinite;
+}
+
+.home-start-button[data-attention='true'] .home-start-button__ripple::before {
+  animation: home-start-ripple var(--home-start-cycle) linear var(--home-start-delay) infinite;
+}
+
+/* Leave the actual pointer press to SEED's scale feedback. */
+.home-start-button:active,
+.home-start-button:active .home-start-button__ripple::before {
+  animation: none;
+}
+
+@keyframes home-start-press {
+  0% {
+    transform: scale(1);
+    animation-timing-function: linear;
+  }
+
+  20.833% {
+    transform: scale(0.96);
+    animation-timing-function: cubic-bezier(0.18, 0.72, 0.25, 1);
+  }
+
+  33.333% {
+    transform: scale(1.002);
+    animation-timing-function: ease-in-out;
+  }
+
+  37.5%,
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* The filled circle expands from the top center while its light dissipates. */
+@keyframes home-start-ripple {
+  0% {
+    transform: translate(-50%, -50%) scale(0.006);
+    opacity: 0.185;
+  }
+
+  7.625% {
+    transform: translate(-50%, -50%) scale(0.152);
+    opacity: 0.155;
+  }
+
+  10.417% {
+    transform: translate(-50%, -50%) scale(0.192);
+    opacity: 0.145;
+  }
+
+  20.833% {
+    transform: translate(-50%, -50%) scale(0.303);
+    opacity: 0.116;
+  }
+
+  31.25% {
+    transform: translate(-50%, -50%) scale(0.404);
+    opacity: 0.086;
+  }
+
+  58.333%,
+  100% {
+    transform: translate(-50%, -50%) scale(0.64);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-start-button[data-attention='true'],
+  .home-start-button[data-attention='true'] .home-start-button__ripple::before {
+    animation: none;
+  }
+}

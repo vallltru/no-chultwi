@@ -1,0 +1,32 @@
+:root {
+  /* UOS palette. The Signature Blue swatch uses the printed HEX value. */
+  --seed-color-palette-uos-signature-blue: #004094;
+
+  --seed-color-palette-uos-blue: #005eb8;
+  --seed-color-palette-uos-blue-light: #0077c8;
+  --seed-color-palette-uos-blue-soft: #9bcbeb;
+  --seed-color-palette-uos-blue-mist: #b9d9eb;
+
+  --seed-color-palette-uos-emerald: #00b398;
+  --seed-color-palette-uos-emerald-light: #2cd5c4;
+  --seed-color-palette-uos-emerald-soft: #9cdbd9;
+  --seed-color-palette-uos-emerald-mist: #dcebec;
+
+  --seed-color-palette-uos-gray: #63666a;
+  --seed-color-palette-uos-gray-light: #bbbcbc;
+  --seed-color-palette-uos-gray-soft: #d9d9d6;
+  --seed-color-palette-uos-gray-mist: #e7e7e0;
+}
+
+/* SEED's brand roles drive buttons, text, borders, and kiosk animations. */
+.app,
+.app [data-seed-color-mode='light-only'] {
+  --seed-color-fg-brand: var(--seed-color-palette-uos-blue);
+  --seed-color-fg-brand-contrast: var(--seed-color-palette-uos-signature-blue);
+  --seed-color-bg-brand-solid: var(--seed-color-palette-uos-blue);
+  --seed-color-bg-brand-solid-pressed: var(--seed-color-palette-uos-signature-blue);
+  --seed-color-bg-brand-weak: var(--seed-color-palette-uos-blue-mist);
+  --seed-color-bg-brand-weak-pressed: var(--seed-color-palette-uos-blue-soft);
+  --seed-color-stroke-brand-solid: var(--seed-color-palette-uos-signature-blue);
+  --seed-color-stroke-brand-weak: var(--seed-color-palette-uos-blue-soft);
+}

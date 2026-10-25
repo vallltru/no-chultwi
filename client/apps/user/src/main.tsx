@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import '@seed-design/css/base.css'
 import '@seed-design/css/recipes/app-screen.css'
+import './theme/seed-colors.css'
 import './index.css'
 import App from './App.tsx'
 
