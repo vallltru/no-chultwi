@@ -1,11 +1,13 @@
 import { IconChevronRightFill } from '@karrotmarket/react-monochrome-icon'
 import { ActionButton, Box, SuffixIcon, Text, VStack } from '@seed-design/react'
+import './HomeScreen.css'
 
 type HomeScreenProps = {
+  isActive: boolean
   onStart: () => void
 }
 
-export const HomeScreen = ({ onStart }: HomeScreenProps) => {
+export const HomeScreen = ({ isActive, onStart }: HomeScreenProps) => {
   return (
     <VStack height="full" justify="space-between">
       <Box flexGrow={1} />
@@ -35,12 +37,17 @@ export const HomeScreen = ({ onStart }: HomeScreenProps) => {
       <Box flexGrow={2} />
 
       <ActionButton
+        className="home-start-button"
+        data-attention={isActive}
         type="button"
         size="large"
         variant="brandSolid"
         onClick={onStart}
       >
-        얼굴로 출석하기
+        <Box as="span" className="home-start-button__ripple" aria-hidden="true" />
+        <Box as="span" className="home-start-button__label">
+          얼굴로 출석하기
+        </Box>
         <SuffixIcon svg={<IconChevronRightFill />} />
       </ActionButton>
     </VStack>
