@@ -1,0 +1,11 @@
+.kiosk-status-bar {
+  width: 100%;
+  flex-shrink: 0;
+  background: transparent;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.kiosk-status-bar__time {
+  font-variant-numeric: tabular-nums;
+}

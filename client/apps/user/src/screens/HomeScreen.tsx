@@ -1,5 +1,6 @@
 import { IconChevronRightFill } from '@karrotmarket/react-monochrome-icon'
 import { ActionButton, Box, SuffixIcon, Text, VStack } from '@seed-design/react'
+import { KioskStatusBar } from '../components/KioskStatusBar'
 import './HomeScreen.css'
 
 type HomeScreenProps = {
@@ -10,6 +11,7 @@ type HomeScreenProps = {
 export const HomeScreen = ({ isActive, onStart }: HomeScreenProps) => {
   return (
     <VStack height="full" justify="space-between">
+      <KioskStatusBar />
       <Box flexGrow={1} />
 
       <VStack
