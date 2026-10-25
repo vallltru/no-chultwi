@@ -132,7 +132,7 @@ export const FaceRecognitionScreen = ({
             aria-atomic="true"
             aria-busy={!result}
           >
-            <Text as="h1" textStyle="t10Bold" color="fg.neutral" className="face-recognition__title">
+            <Text as="h1" textStyle="t12Bold" color="fg.neutral" className="face-recognition__title">
               <Text as="span" className="face-recognition__scanning-copy" aria-hidden={!!result}>
                 얼굴 확인중
                 <Box as="span" className="face-recognition__dots" aria-hidden="true">
@@ -149,7 +149,7 @@ export const FaceRecognitionScreen = ({
             </Text>
             <Text
               as="p"
-              textStyle="t5Regular"
+              textStyle="t6Regular"
               color="fg.neutralSubtle"
               className="face-recognition__description"
             >

@@ -24,10 +24,10 @@ export const AttendanceCompleteScreen = ({
           </Box>
         </Box>
         <VStack align="center" gap="x2">
-          <Text as="h1" textStyle="screenTitle" color="fg.neutral" align="center">
+          <Text as="h1" textStyle="t12Bold" color="fg.neutral" align="center">
             출결 확인 완료
           </Text>
-          <Text as="p" textStyle="t5Regular" color="fg.neutralSubtle" align="center">
+          <Text as="p" textStyle="t6Regular" color="fg.neutralSubtle" align="center">
             {completedTimeLabel}으로 출결 확인을 완료했어요
           </Text>
         </VStack>
