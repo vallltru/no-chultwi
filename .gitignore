@@ -19,6 +19,12 @@ Thumbs.db
 !*secret*.example
 !*secret*.properties.example
 
+# Security & Private Keys (AWS EC2 SSH keys, SSL/TLS certs)
+*.pem
+*.ppk
+*.key
+*.crt
+
 # Logs
 *.log
 npm-debug.log*

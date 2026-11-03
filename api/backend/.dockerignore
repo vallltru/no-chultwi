@@ -1,0 +1,9 @@
+.gradle
+build
+.git
+.idea
+*.md
+*secret*
+.env*
+*.key
+*.pem
