@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - dev
+      - feat/cicd-pipeline
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
@@ -57,7 +59,9 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ~/no-chultwi
-            git pull origin dev
+            git fetch origin ${{ github.ref_name }}
+            git checkout ${{ github.ref_name }}
+            git pull origin ${{ github.ref_name }}
             
             # .env 파일이 없으면 템플릿 복사
             if [ ! -f .env ]; then
@@ -74,8 +78,8 @@ jobs:
             # 최신 백엔드 도커 이미지만 다운로드 (약 3초 소요)
             docker compose pull backend
             
-            # 백엔드 컨테이너 갱신 및 실행
-            docker compose up -d backend
+            # 백엔드 및 DB 컨테이너 실행
+            docker compose up -d
             
             # 이전 버전의 미사용 이미지 청소
             docker image prune -f
