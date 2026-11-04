@@ -1,0 +1,10 @@
+.gradle
+build
+!build/libs/*.jar
+.git
+.idea
+*.md
+*secret*
+.env*
+*.key
+*.pem
