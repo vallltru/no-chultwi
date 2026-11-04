@@ -8,4 +8,5 @@ COPY build/libs/*.jar app.jar
 ENV TZ=Asia/Seoul
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-Duser.timezone=Asia/Seoul", "-jar", "app.jar"]
+# 프리티어(1GB RAM) 메모리 폭주 방지를 위해 최대 힙 메모리를 350MB로 제한
+ENTRYPOINT ["java", "-Xms128m", "-Xmx350m", "-Duser.timezone=Asia/Seoul", "-jar", "app.jar"]

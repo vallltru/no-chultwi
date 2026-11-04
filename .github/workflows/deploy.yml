@@ -68,6 +68,9 @@ jobs:
           username: ${{ secrets.EC2_USERNAME || 'ubuntu' }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            # 스왑 메모리 활성화 보장
+            sudo swapon /swapfile 2>/dev/null || true
+
             mkdir -p ~/no-chultwi && cd ~/no-chultwi
             
             # .env 파일이 없으면 기본 설정 생성
@@ -91,8 +94,8 @@ jobs:
             # Docker Hub에서 방금 푸시된 최신 이미지만 다운로드 (약 3초 소요)
             docker compose pull backend
             
-            # 백엔드 및 DB 컨테이너 실행
-            docker compose up -d
+            # 백엔드 및 DB 컨테이너 실행 (MySQL healthcheck 통과 후 백엔드 실행)
+            docker compose up -d --remove-orphans
             
             # 이전 버전의 미사용 도커 이미지 청소
             docker image prune -f
