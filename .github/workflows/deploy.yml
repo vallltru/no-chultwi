@@ -50,7 +50,17 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/nochultwi-backend:latest
 
-      # 7. EC2 서버로 배포 명령 전송 (SSH)
+      # 7. docker-compose.yml 파일을 EC2로 직접 전송 (Git 의존성 완전 제거)
+      - name: Copy docker-compose.yml to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME || 'ubuntu' }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.yml"
+          target: "~/no-chultwi"
+
+      # 8. EC2에서 최신 도커 이미지 당겨와서 가동 (3초 완료)
       - name: Deploy to AWS EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -58,28 +68,31 @@ jobs:
           username: ${{ secrets.EC2_USERNAME || 'ubuntu' }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ~/no-chultwi
-            git fetch origin ${{ github.ref_name }}
-            git checkout ${{ github.ref_name }}
-            git pull origin ${{ github.ref_name }}
+            mkdir -p ~/no-chultwi && cd ~/no-chultwi
             
-            # .env 파일이 없으면 템플릿 복사
+            # .env 파일이 없으면 기본 설정 생성
             if [ ! -f .env ]; then
-              cp .env.example .env
-            fi
-            
-            # .env 파일 내 DOCKER_IMAGE 환경 변수 자동 업데이트
-            if grep -q "^DOCKER_IMAGE=" .env; then
-              sed -i "s|^DOCKER_IMAGE=.*|DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/nochultwi-backend:latest|g" .env
+              echo "DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/nochultwi-backend:latest" > .env
+              echo "MYSQL_ROOT_PASSWORD=nochultwi_root_2026!" >> .env
+              echo "MYSQL_DATABASE=nochultwidb" >> .env
+              echo "MYSQL_USER=nochultwi_user" >> .env
+              echo "MYSQL_PASSWORD=nochultwi_pw_2026!" >> .env
+              echo "SERVER_PORT=8080" >> .env
+              echo "CORS_ALLOWED_ORIGINS=*" >> .env
             else
-              echo "DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/nochultwi-backend:latest" >> .env
+              # DOCKER_IMAGE만 최신 태그로 갱신
+              if grep -q "^DOCKER_IMAGE=" .env; then
+                sed -i "s|^DOCKER_IMAGE=.*|DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/nochultwi-backend:latest|g" .env
+              else
+                echo "DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/nochultwi-backend:latest" >> .env
+              fi
             fi
             
-            # 최신 백엔드 도커 이미지만 다운로드 (약 3초 소요)
+            # Docker Hub에서 방금 푸시된 최신 이미지만 다운로드 (약 3초 소요)
             docker compose pull backend
             
             # 백엔드 및 DB 컨테이너 실행
             docker compose up -d
             
-            # 이전 버전의 미사용 이미지 청소
+            # 이전 버전의 미사용 도커 이미지 청소
             docker image prune -f
