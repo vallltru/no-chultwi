@@ -7,6 +7,7 @@ import com.nochultwi.backend.global.error.BusinessException;
 import com.nochultwi.backend.global.error.ErrorCode;
 import com.nochultwi.backend.infra.school.SchoolApiPort;
 import com.nochultwi.backend.infra.school.SchoolCourseDto;
+import com.nochultwi.backend.infra.school.UosWiseApiClient;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -159,20 +160,24 @@ public class DeviceAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // 3. 단말기가 강의실(예: "37-B601")로 등록되어 있고, 특정 강의(예: "30000-03")에 접근하는 경우:
-        //    ① 해당 강의의 강의실이 일치해야 하며, ② 현재 시각이 그 강의의 활성 수업 시간이어야만 접근 허용 (시간 외 타 강의 접근 차단)
+        //    ① 해당 강의가 이 강의실을 사용하는지 확인하고, ② 현재 시각이 이 강의실에서 열리는 수업 시간이어야만 접근 허용
         Optional<SchoolCourseDto> courseOpt = schoolApiPort.getCourseInfo(target);
         if (courseOpt.isEmpty()) {
             return false;
         }
 
         SchoolCourseDto course = courseOpt.get();
-        if (!schoolApiPort.isSameClassroom(deviceAssigned, course.classroom())) {
+        boolean usesThisClassroom = schoolApiPort.isSameClassroom(deviceAssigned, course.classroom())
+                || UosWiseApiClient.getEffectiveSchedules(course).stream()
+                .anyMatch(s -> schoolApiPort.isSameClassroom(deviceAssigned, s.classroom()));
+
+        if (!usesThisClassroom) {
             return false;
         }
 
         OffsetDateTime now = OffsetDateTime.now(clock);
         boolean hasActiveSession = !sessionRepository.findActiveSessions(target, now).isEmpty();
-        boolean isScheduledNow = schoolApiPort.isCourseScheduledAt(course, now);
-        return hasActiveSession || isScheduledNow;
+        boolean isScheduledInThisClassroomNow = schoolApiPort.isCourseScheduledAtInClassroom(course, deviceAssigned, now);
+        return hasActiveSession || isScheduledInThisClassroomNow;
     }
 }

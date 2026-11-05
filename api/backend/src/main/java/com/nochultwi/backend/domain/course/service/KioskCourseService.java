@@ -56,7 +56,7 @@ public class KioskCourseService {
             if (!activeSessions.isEmpty()) {
                 sessionDto = KioskSessionDto.from(activeSessions.get(0));
             } else if (schoolApiPort.isCourseScheduledAt(schoolCourse, now)) {
-                sessionDto = KioskSessionDto.from(getOrCreateScheduledSession(schoolCourse, now));
+                sessionDto = KioskSessionDto.from(getOrCreateScheduledSession(schoolCourse, null, now));
             } else {
                 sessionDto = null;
             }
@@ -89,10 +89,10 @@ public class KioskCourseService {
             return new CurrentSessionResponse(courseDto, now, KioskSessionDto.from(currentSession));
         }
 
-        // 2-2. 학교 시간표(요일·교시)상 현재 시각에 해당 강의실에서 진행 중인 수업이 있으면 당일 Session 자동 생성 및 반환
+        // 2-2. 학교 시간표(요일·교시·강의실)상 현재 시각에 해당 강의실에서 진행 중인 수업이 있으면 당일 Session 자동 생성 및 반환
         for (SchoolCourseDto course : classroomCourses) {
-            if (schoolApiPort.isCourseScheduledAt(course, now)) {
-                Session autoSession = getOrCreateScheduledSession(course, now);
+            if (schoolApiPort.isCourseScheduledAtInClassroom(course, courseIdOrClassroom, now)) {
+                Session autoSession = getOrCreateScheduledSession(course, courseIdOrClassroom, now);
                 KioskCourseDto courseDto = new KioskCourseDto(
                         course.courseId(),
                         course.courseCode(),
@@ -103,7 +103,7 @@ public class KioskCourseService {
         }
 
         // 2-3. 공강 시간대: 오늘(현재 요일) 이 강의실에서 다음에 시작할 수업을 우선 선택하여 session: null 과 함께 반환
-        SchoolCourseDto representCourse = selectUpcomingOrTodayCourse(classroomCourses, now);
+        SchoolCourseDto representCourse = selectUpcomingOrTodayCourse(classroomCourses, courseIdOrClassroom, now);
         KioskCourseDto courseDto = new KioskCourseDto(
                 representCourse.courseId(),
                 representCourse.courseCode(),
@@ -114,42 +114,43 @@ public class KioskCourseService {
 
     /**
      * 공강 시간대에 표시할 대표 강의를 선정합니다.
-     * 1순위: 오늘(현재 요일) 이 강의실에서 현재 시각 이후 가장 빨리 시작하는 다음 수업
+     * 1순위: 오늘(현재 요일) 이 강의실(classroom)에서 현재 시각 이후 가장 빨리 시작하는 다음 수업
      * 2순위: 오늘 이 강의실에서 열렸던 수업 중 가장 늦은 수업
      * 3순위: 강의실 첫 번째 수업
      */
-    private SchoolCourseDto selectUpcomingOrTodayCourse(List<SchoolCourseDto> classroomCourses, OffsetDateTime now) {
+    private SchoolCourseDto selectUpcomingOrTodayCourse(
+            List<SchoolCourseDto> classroomCourses, String classroom, OffsetDateTime now) {
         String todayDay = now.getDayOfWeek().name();
 
         List<SchoolCourseDto> todayCourses = classroomCourses.stream()
                 .filter(c -> UosWiseApiClient.getEffectiveSchedules(c).stream()
-                        .anyMatch(s -> todayDay.equalsIgnoreCase(s.dayOfWeek())))
+                        .anyMatch(s -> todayDay.equalsIgnoreCase(s.dayOfWeek())
+                                && schoolApiPort.isSameClassroom(classroom, s.classroom())))
                 .toList();
 
         if (!todayCourses.isEmpty()) {
-            // 오늘 앞으로 시작할 다음 수업 중 가장 빠른 수업 찾기
             Optional<SchoolCourseDto> nextUpcoming = todayCourses.stream()
-                    .filter(c -> UosWiseApiClient.computeScheduleWindow(c, now).openAt().isAfter(now))
-                    .min(Comparator.comparing(c -> UosWiseApiClient.computeScheduleWindow(c, now).openAt()));
+                    .filter(c -> UosWiseApiClient.computeScheduleWindowForClassroom(c, classroom, now).openAt().isAfter(now))
+                    .min(Comparator.comparing(c -> UosWiseApiClient.computeScheduleWindowForClassroom(c, classroom, now).openAt()));
             if (nextUpcoming.isPresent()) {
                 return nextUpcoming.get();
             }
 
-            // 오늘 수업이 모두 끝난 경우 오늘 마지막 수업 반환
             return todayCourses.stream()
-                    .max(Comparator.comparing(c -> UosWiseApiClient.computeScheduleWindow(c, now).closeAt()))
+                    .max(Comparator.comparing(c -> UosWiseApiClient.computeScheduleWindowForClassroom(c, classroom, now).closeAt()))
                     .orElse(todayCourses.get(0));
         }
 
         return classroomCourses.get(0);
     }
 
-    private Session getOrCreateScheduledSession(SchoolCourseDto course, OffsetDateTime now) {
+    private Session getOrCreateScheduledSession(SchoolCourseDto course, String classroom, OffsetDateTime now) {
         LocalDate today = now.toLocalDate();
         String autoSessionId = "session-" + course.courseId() + "-" + today;
 
         return sessionRepository.findBySessionId(autoSessionId).orElseGet(() -> {
-            UosWiseApiClient.ScheduleWindow window = UosWiseApiClient.computeScheduleWindow(course, now);
+            UosWiseApiClient.ScheduleWindow window =
+                    UosWiseApiClient.computeScheduleWindowForClassroom(course, classroom, now);
             int week = (int) Math.max(1, Math.min(16, ChronoUnit.WEEKS.between(SEMESTER_START, today) + 1));
 
             Session newSession = Session.builder()
@@ -163,7 +164,7 @@ public class KioskCourseService {
                     .closeAt(window.closeAt())
                     .build();
             log.info("Auto-created scheduled session for classroom={} courseId={} sessionId={}",
-                    course.classroom(), course.courseId(), autoSessionId);
+                    classroom != null ? classroom : course.classroom(), course.courseId(), autoSessionId);
             return sessionRepository.save(newSession);
         });
     }

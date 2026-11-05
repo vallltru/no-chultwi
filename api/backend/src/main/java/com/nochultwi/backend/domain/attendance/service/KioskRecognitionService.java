@@ -16,6 +16,7 @@ import com.nochultwi.backend.global.security.device.DevicePrincipal;
 import com.nochultwi.backend.infra.ai.FaceRecognitionPort;
 import com.nochultwi.backend.infra.school.SchoolApiPort;
 import com.nochultwi.backend.infra.school.SchoolCourseDto;
+import com.nochultwi.backend.infra.school.UosWiseApiClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -157,6 +158,12 @@ public class KioskRecognitionService {
             return true;
         }
         Optional<SchoolCourseDto> courseOpt = schoolApiPort.getCourseInfo(courseId);
-        return courseOpt.isPresent() && schoolApiPort.isSameClassroom(deviceAssigned, courseOpt.get().classroom());
+        if (courseOpt.isEmpty()) {
+            return false;
+        }
+        SchoolCourseDto course = courseOpt.get();
+        return schoolApiPort.isSameClassroom(deviceAssigned, course.classroom())
+                || UosWiseApiClient.getEffectiveSchedules(course).stream()
+                .anyMatch(s -> schoolApiPort.isSameClassroom(deviceAssigned, s.classroom()));
     }
 }

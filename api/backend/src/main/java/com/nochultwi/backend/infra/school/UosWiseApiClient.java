@@ -77,12 +77,17 @@ public class UosWiseApiClient implements SchoolApiPort {
         return normalizeClassroomToAscii(roomA).equals(normalizeClassroomToAscii(roomB));
     }
 
-    /**
-     * 다중 요일/강의실 수업(예: "화[5,6]/14-414,15,목[5,6]/14-430")을 포함한
-     * 모든 요일·교시 구간을 검사하여 현재 시각이 해당 강의의 수업 시간대(openAt ~ closeAt) 안인지 판별합니다.
-     */
     @Override
     public boolean isCourseScheduledAt(SchoolCourseDto course, OffsetDateTime time) {
+        return isCourseScheduledAtInClassroom(course, null, time);
+    }
+
+    /**
+     * 다중 요일/강의실 수업(예: "화[5,6]/14-414,15,목[5,6]/14-430")에서
+     * 현재 시각의 요일·교시뿐만 아니라 해당 요일의 강의실(classroom)까지 일치하는지 검사합니다.
+     */
+    @Override
+    public boolean isCourseScheduledAtInClassroom(SchoolCourseDto course, String classroom, OffsetDateTime time) {
         if (course == null || time == null) {
             return false;
         }
@@ -90,31 +95,44 @@ public class UosWiseApiClient implements SchoolApiPort {
         List<ParsedSchedule> schedules = getEffectiveSchedules(course);
 
         for (ParsedSchedule schedule : schedules) {
-            if (targetDay.equalsIgnoreCase(schedule.dayOfWeek())
-                    && schedule.startPeriod() != null && schedule.endPeriod() != null) {
-                ScheduleWindow window = computeWindowForPeriods(schedule.startPeriod(), schedule.endPeriod(), time);
-                if ((time.isEqual(window.openAt()) || time.isAfter(window.openAt()))
-                        && (time.isEqual(window.closeAt()) || time.isBefore(window.closeAt()))) {
-                    return true;
-                }
+            if (!targetDay.equalsIgnoreCase(schedule.dayOfWeek())
+                    || schedule.startPeriod() == null || schedule.endPeriod() == null) {
+                continue;
+            }
+            if (StringUtils.hasText(classroom) && !isSameClassroom(classroom, schedule.classroom())) {
+                continue;
+            }
+            ScheduleWindow window = computeWindowForPeriods(schedule.startPeriod(), schedule.endPeriod(), time);
+            if ((time.isEqual(window.openAt()) || time.isAfter(window.openAt()))
+                    && (time.isEqual(window.closeAt()) || time.isBefore(window.closeAt()))) {
+                return true;
             }
         }
         return false;
     }
 
     /**
-     * 특정 요일(referenceTime)에 해당하는 강의의 출석 시간 창(openAt, lateFrom, closeAt)을 계산합니다.
-     * 주 2회 이상 수업인 경우 해당 요일에 맞는 교시 구간을 우선 적용합니다.
+     * 특정 요일(referenceTime) 및 강의실에 해당하는 강의의 출석 시간 창(openAt, lateFrom, closeAt)을 계산합니다.
      */
     public static ScheduleWindow computeScheduleWindow(SchoolCourseDto course, OffsetDateTime referenceTime) {
+        return computeScheduleWindowForClassroom(course, null, referenceTime);
+    }
+
+    public static ScheduleWindow computeScheduleWindowForClassroom(
+            SchoolCourseDto course, String classroom, OffsetDateTime referenceTime) {
         String targetDay = referenceTime.getDayOfWeek().name();
         List<ParsedSchedule> schedules = getEffectiveSchedules(course);
 
         for (ParsedSchedule schedule : schedules) {
-            if (targetDay.equalsIgnoreCase(schedule.dayOfWeek())
-                    && schedule.startPeriod() != null && schedule.endPeriod() != null) {
-                return computeWindowForPeriods(schedule.startPeriod(), schedule.endPeriod(), referenceTime);
+            if (!targetDay.equalsIgnoreCase(schedule.dayOfWeek())
+                    || schedule.startPeriod() == null || schedule.endPeriod() == null) {
+                continue;
             }
+            if (StringUtils.hasText(classroom)
+                    && !normalizeClassroomToAscii(classroom).equals(normalizeClassroomToAscii(schedule.classroom()))) {
+                continue;
+            }
+            return computeWindowForPeriods(schedule.startPeriod(), schedule.endPeriod(), referenceTime);
         }
 
         int startP = course.startPeriod() != null ? course.startPeriod() : 1;
@@ -183,7 +201,7 @@ public class UosWiseApiClient implements SchoolApiPort {
         return new ArrayList<>(matched.values());
     }
 
-    private boolean usesClassroom(SchoolCourseDto course, String targetClassroom) {
+    public boolean usesClassroom(SchoolCourseDto course, String targetClassroom) {
         if (isSameClassroom(targetClassroom, course.classroom())) {
             return true;
         }

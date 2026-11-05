@@ -20,4 +20,8 @@ public interface SchoolApiPort {
     default boolean isCourseScheduledAt(SchoolCourseDto course, OffsetDateTime time) {
         return false;
     }
+
+    default boolean isCourseScheduledAtInClassroom(SchoolCourseDto course, String classroom, OffsetDateTime time) {
+        return isCourseScheduledAt(course, time);
+    }
 }
