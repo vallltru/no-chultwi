@@ -37,6 +37,7 @@ services:
       DB_USERNAME: ${MYSQL_USER:-nochultwi_user}
       DB_PASSWORD: ${MYSQL_PASSWORD}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173}
+      SCHOOL_UOS_API_KEY: ${SCHOOL_UOS_API_KEY:-}
     depends_on:
       db:
         condition: service_healthy
