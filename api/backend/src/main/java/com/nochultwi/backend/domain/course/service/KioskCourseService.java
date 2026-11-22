@@ -7,6 +7,7 @@ import com.nochultwi.backend.domain.course.entity.Session;
 import com.nochultwi.backend.domain.course.repository.SessionRepository;
 import com.nochultwi.backend.global.error.BusinessException;
 import com.nochultwi.backend.global.error.ErrorCode;
+import com.nochultwi.backend.global.security.device.DevicePrincipal;
 import com.nochultwi.backend.infra.school.SchoolApiPort;
 import com.nochultwi.backend.infra.school.SchoolCourseDto;
 import com.nochultwi.backend.infra.school.UosWiseApiClient;
@@ -36,7 +37,13 @@ public class KioskCourseService {
 
     private final SchoolApiPort schoolApiPort;
     private final SessionRepository sessionRepository;
+    private final DeviceCourseAuthorizationService deviceCourseAuthorizationService;
     private final Clock clock;
+
+    public CurrentSessionResponse getCurrentSession(String courseIdOrClassroom, DevicePrincipal principal) {
+        deviceCourseAuthorizationService.validateAccess(principal, courseIdOrClassroom);
+        return getCurrentSession(courseIdOrClassroom);
+    }
 
     public CurrentSessionResponse getCurrentSession(String courseIdOrClassroom) {
         OffsetDateTime now = OffsetDateTime.now(clock);

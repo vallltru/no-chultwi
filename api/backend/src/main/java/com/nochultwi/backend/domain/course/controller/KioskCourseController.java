@@ -36,7 +36,7 @@ public class KioskCourseController {
     public ResponseEntity<CurrentSessionResponse> getCurrentSession(
             @PathVariable String courseId,
             @AuthenticationPrincipal DevicePrincipal principal) {
-        CurrentSessionResponse response = kioskCourseService.getCurrentSession(courseId);
+        CurrentSessionResponse response = kioskCourseService.getCurrentSession(courseId, principal);
         return ResponseEntity.ok(response);
     }
 }

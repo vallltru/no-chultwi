@@ -8,15 +8,13 @@ import com.nochultwi.backend.domain.attendance.repository.AttendanceRepository;
 import com.nochultwi.backend.domain.attendance.token.RecognitionTokenStore;
 import com.nochultwi.backend.domain.course.entity.Session;
 import com.nochultwi.backend.domain.course.repository.SessionRepository;
+import com.nochultwi.backend.domain.course.service.DeviceCourseAuthorizationService;
 import com.nochultwi.backend.domain.student.dto.EnrolledStudentDto;
 import com.nochultwi.backend.domain.student.service.StudentService;
 import com.nochultwi.backend.global.error.BusinessException;
 import com.nochultwi.backend.global.error.ErrorCode;
 import com.nochultwi.backend.global.security.device.DevicePrincipal;
 import com.nochultwi.backend.infra.ai.FaceRecognitionPort;
-import com.nochultwi.backend.infra.school.SchoolApiPort;
-import com.nochultwi.backend.infra.school.SchoolCourseDto;
-import com.nochultwi.backend.infra.school.UosWiseApiClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -42,7 +40,7 @@ public class KioskRecognitionService {
     private final AttendanceRepository attendanceRepository;
     private final FaceRecognitionPort faceRecognitionPort;
     private final RecognitionTokenStore tokenStore;
-    private final SchoolApiPort schoolApiPort;
+    private final DeviceCourseAuthorizationService deviceCourseAuthorizationService;
     private final Clock clock;
 
     public RecognitionResponse recognize(
@@ -64,10 +62,8 @@ public class KioskRecognitionService {
             throw new BusinessException(ErrorCode.UNSUPPORTED_IMAGE_TYPE, "지원하지 않는 이미지 형식입니다. (JPEG/PNG 형식만 지원)");
         }
 
-        // 2. 단말기 등록 강좌(또는 강의실)와 요청 강좌 일치 여부 확인
-        if (principal != null && !isDeviceAuthorizedForCourse(principal.courseId(), courseId)) {
-            throw new BusinessException(ErrorCode.COURSE_FORBIDDEN, "해당 강의에 대한 단말기 접근 권한이 없습니다.");
-        }
+        // 2. 단말기 등록 강좌(또는 강의실) 및 수업 시간 접근 권한 확인
+        deviceCourseAuthorizationService.validateAccess(principal, courseId);
 
         // 3. 차시(Session) 유효성 및 출석 가능 시간대 검증
         Session session = sessionRepository.findBySessionId(sessionId)
@@ -148,22 +144,5 @@ public class KioskRecognitionService {
                 matchedStudent.studentNumber(), matchedStudent.name(), sessionId);
 
         return RecognitionResponse.matched(tokenData.token(), expiresAt, candidateDto);
-    }
-
-    private boolean isDeviceAuthorizedForCourse(String deviceAssigned, String courseId) {
-        if (deviceAssigned == null || courseId == null) {
-            return false;
-        }
-        if (deviceAssigned.trim().equalsIgnoreCase(courseId.trim())) {
-            return true;
-        }
-        Optional<SchoolCourseDto> courseOpt = schoolApiPort.getCourseInfo(courseId);
-        if (courseOpt.isEmpty()) {
-            return false;
-        }
-        SchoolCourseDto course = courseOpt.get();
-        return schoolApiPort.isSameClassroom(deviceAssigned, course.classroom())
-                || UosWiseApiClient.getEffectiveSchedules(course).stream()
-                .anyMatch(s -> schoolApiPort.isSameClassroom(deviceAssigned, s.classroom()));
     }
 }
