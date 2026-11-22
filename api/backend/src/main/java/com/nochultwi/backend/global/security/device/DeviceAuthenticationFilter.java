@@ -27,7 +27,6 @@ public class DeviceAuthenticationFilter extends OncePerRequestFilter {
     public static final String DEVICE_ID_HEADER = "X-Device-Id";
     public static final String DEVICE_KEY_HEADER = "X-Device-Key";
     private static final String KIOSK_PATH_PREFIX = "/api/v1/kiosk";
-    private static final String COURSES_PATH_SEGMENT = "/courses/";
 
     // 타이밍 공격 방지용 더미 해시
     private static final String DUMMY_KEY_HASH =
@@ -91,9 +90,6 @@ public class DeviceAuthenticationFilter extends OncePerRequestFilter {
             throw new BusinessException(ErrorCode.DEVICE_UNAUTHORIZED, "등록되지 않았거나 비활성화된 단말기입니다.");
         }
 
-        // 특정 강의 경로(/api/v1/kiosk/courses/{courseId}/**) 호출 시 배정된 강의 일치 여부 검증
-        verifyCoursePermission(request.getRequestURI(), device);
-
         DevicePrincipal principal = new DevicePrincipal(
                 device.getId(),
                 device.getDeviceId(),
@@ -105,21 +101,6 @@ public class DeviceAuthenticationFilter extends OncePerRequestFilter {
                 new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        log.debug("Device authenticated successfully: deviceId={}, courseId={}", device.getDeviceId(), device.getCourseId());
-    }
-
-    private void verifyCoursePermission(String uri, Device device) {
-        int idx = uri.indexOf(COURSES_PATH_SEGMENT);
-        if (idx == -1) {
-            return;
-        }
-
-        String remaining = uri.substring(idx + COURSES_PATH_SEGMENT.length());
-        int slashIdx = remaining.indexOf('/');
-        String pathCourseId = (slashIdx == -1) ? remaining : remaining.substring(0, slashIdx);
-
-        if (StringUtils.hasText(pathCourseId) && !pathCourseId.equals(device.getCourseId())) {
-            throw new BusinessException(ErrorCode.COURSE_FORBIDDEN, "해당 강의에 대한 단말기 접근 권한이 없습니다.");
-        }
+        log.debug("Device authenticated successfully: deviceId={}, assigned={}", device.getDeviceId(), device.getCourseId());
     }
 }

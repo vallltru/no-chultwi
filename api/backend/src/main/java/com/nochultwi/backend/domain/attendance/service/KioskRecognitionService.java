@@ -8,6 +8,7 @@ import com.nochultwi.backend.domain.attendance.repository.AttendanceRepository;
 import com.nochultwi.backend.domain.attendance.token.RecognitionTokenStore;
 import com.nochultwi.backend.domain.course.entity.Session;
 import com.nochultwi.backend.domain.course.repository.SessionRepository;
+import com.nochultwi.backend.domain.course.service.DeviceCourseAuthorizationService;
 import com.nochultwi.backend.domain.student.dto.EnrolledStudentDto;
 import com.nochultwi.backend.domain.student.service.StudentService;
 import com.nochultwi.backend.global.error.BusinessException;
@@ -39,6 +40,7 @@ public class KioskRecognitionService {
     private final AttendanceRepository attendanceRepository;
     private final FaceRecognitionPort faceRecognitionPort;
     private final RecognitionTokenStore tokenStore;
+    private final DeviceCourseAuthorizationService deviceCourseAuthorizationService;
     private final Clock clock;
 
     public RecognitionResponse recognize(
@@ -60,10 +62,8 @@ public class KioskRecognitionService {
             throw new BusinessException(ErrorCode.UNSUPPORTED_IMAGE_TYPE, "지원하지 않는 이미지 형식입니다. (JPEG/PNG 형식만 지원)");
         }
 
-        // 2. 단말기 등록 강좌와 요청 강좌 일치 여부 확인
-        if (principal != null && !principal.courseId().equals(courseId)) {
-            throw new BusinessException(ErrorCode.COURSE_FORBIDDEN, "해당 강의에 대한 단말기 접근 권한이 없습니다.");
-        }
+        // 2. 단말기 등록 강좌(또는 강의실) 및 수업 시간 접근 권한 확인
+        deviceCourseAuthorizationService.validateAccess(principal, courseId);
 
         // 3. 차시(Session) 유효성 및 출석 가능 시간대 검증
         Session session = sessionRepository.findBySessionId(sessionId)
