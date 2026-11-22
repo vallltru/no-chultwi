@@ -1,4 +1,4 @@
-package com.nochultwi.backend.infra.ai;
+package com.nochultwi.backend.domain.attendance.port;
 
 import com.nochultwi.backend.domain.student.dto.EnrolledStudentDto;
 
