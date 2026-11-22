@@ -1,4 +1,4 @@
-package com.nochultwi.backend.infra.school;
+package com.nochultwi.backend.domain.course.dto;
 
 public record SchoolCourseDto(
         String courseId,
