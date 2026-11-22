@@ -121,18 +121,7 @@ class DeviceAuthIntegrationTest {
     }
 
     @Test
-    @DisplayName("배정되지 않은 다른 강의 경로(/courses/other-course/**)로 접근하면 403 COURSE_FORBIDDEN을 반환한다")
-    void wrongCourseReturns403() throws Exception {
-        mockMvc.perform(get("/api/v1/kiosk/courses/99999/probe")
-                        .header("X-Device-Id", TEST_DEVICE_ID)
-                        .header("X-Device-Key", TEST_RAW_KEY))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value("COURSE_FORBIDDEN"))
-                .andExpect(jsonPath("$.message").value("해당 강의에 대한 단말기 접근 권한이 없습니다."));
-    }
-
-    @Test
-    @DisplayName("정상 인증된 단말기는 200 OK와 함께 배정된 강의 경로에 접근할 수 있다")
+    @DisplayName("정상 인증된 단말기는 200 OK와 함께 DevicePrincipal 신분증이 주입된다")
     void validDevicePasses() throws Exception {
         mockMvc.perform(get("/api/v1/kiosk/courses/30000-03/probe")
                         .header("X-Device-Id", TEST_DEVICE_ID)

@@ -1,13 +1,9 @@
 package com.nochultwi.backend.global.security.device;
 
-import com.nochultwi.backend.domain.course.repository.SessionRepository;
 import com.nochultwi.backend.domain.device.entity.Device;
 import com.nochultwi.backend.domain.device.repository.DeviceRepository;
 import com.nochultwi.backend.global.error.BusinessException;
 import com.nochultwi.backend.global.error.ErrorCode;
-import com.nochultwi.backend.infra.school.SchoolApiPort;
-import com.nochultwi.backend.infra.school.SchoolCourseDto;
-import com.nochultwi.backend.infra.school.UosWiseApiClient;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,9 +19,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
-import java.time.Clock;
-import java.time.OffsetDateTime;
-import java.util.Optional;
 
 @Slf4j
 @Component
@@ -34,31 +27,21 @@ public class DeviceAuthenticationFilter extends OncePerRequestFilter {
     public static final String DEVICE_ID_HEADER = "X-Device-Id";
     public static final String DEVICE_KEY_HEADER = "X-Device-Key";
     private static final String KIOSK_PATH_PREFIX = "/api/v1/kiosk";
-    private static final String COURSES_PATH_SEGMENT = "/courses/";
 
     // 타이밍 공격 방지용 더미 해시
     private static final String DUMMY_KEY_HASH =
             "$2a$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ0123456";
 
     private final DeviceRepository deviceRepository;
-    private final SessionRepository sessionRepository;
-    private final SchoolApiPort schoolApiPort;
     private final PasswordEncoder passwordEncoder;
-    private final Clock clock;
     private final HandlerExceptionResolver handlerExceptionResolver;
 
     public DeviceAuthenticationFilter(
             DeviceRepository deviceRepository,
-            SessionRepository sessionRepository,
-            SchoolApiPort schoolApiPort,
             PasswordEncoder passwordEncoder,
-            Clock clock,
             @Qualifier("handlerExceptionResolver") HandlerExceptionResolver handlerExceptionResolver) {
         this.deviceRepository = deviceRepository;
-        this.sessionRepository = sessionRepository;
-        this.schoolApiPort = schoolApiPort;
         this.passwordEncoder = passwordEncoder;
-        this.clock = clock;
         this.handlerExceptionResolver = handlerExceptionResolver;
     }
 
@@ -107,9 +90,6 @@ public class DeviceAuthenticationFilter extends OncePerRequestFilter {
             throw new BusinessException(ErrorCode.DEVICE_UNAUTHORIZED, "등록되지 않았거나 비활성화된 단말기입니다.");
         }
 
-        // 특정 강의/강의실 경로(/api/v1/kiosk/courses/{courseId}/**) 호출 시 배정된 강의실 및 현재 수업 시간 일치 여부 검증
-        verifyCoursePermission(request.getRequestURI(), device);
-
         DevicePrincipal principal = new DevicePrincipal(
                 device.getId(),
                 device.getDeviceId(),
@@ -122,62 +102,5 @@ public class DeviceAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         log.debug("Device authenticated successfully: deviceId={}, assigned={}", device.getDeviceId(), device.getCourseId());
-    }
-
-    private void verifyCoursePermission(String uri, Device device) {
-        int idx = uri.indexOf(COURSES_PATH_SEGMENT);
-        if (idx == -1) {
-            return;
-        }
-
-        String remaining = uri.substring(idx + COURSES_PATH_SEGMENT.length());
-        int slashIdx = remaining.indexOf('/');
-        String pathTarget = (slashIdx == -1) ? remaining : remaining.substring(0, slashIdx);
-
-        if (!StringUtils.hasText(pathTarget)) {
-            return;
-        }
-
-        if (!isAuthorizedForTarget(device.getCourseId(), pathTarget)) {
-            throw new BusinessException(ErrorCode.COURSE_FORBIDDEN, "해당 강의에 대한 단말기 접근 권한이 없습니다.");
-        }
-    }
-
-    private boolean isAuthorizedForTarget(String deviceAssigned, String target) {
-        if (!StringUtils.hasText(deviceAssigned) || !StringUtils.hasText(target)) {
-            return false;
-        }
-
-        // 1. 단말기에 직접 배정된 값과 요청 대상이 정확히 일치하는 경우 (강의 코드 1:1 배정 또는 동일 강의실 코드 조회)
-        if (deviceAssigned.trim().equalsIgnoreCase(target.trim())) {
-            return true;
-        }
-
-        // 2. 강의실 번호 간 일치 (예: "37-B601" == "37-나601")
-        if (schoolApiPort.isSameClassroom(deviceAssigned, target)
-                && !schoolApiPort.getCoursesByClassroom(target).isEmpty()) {
-            return true;
-        }
-
-        // 3. 단말기가 강의실(예: "37-B601")로 등록되어 있고, 특정 강의(예: "30000-03")에 접근하는 경우:
-        //    ① 해당 강의가 이 강의실을 사용하는지 확인하고, ② 현재 시각이 이 강의실에서 열리는 수업 시간이어야만 접근 허용
-        Optional<SchoolCourseDto> courseOpt = schoolApiPort.getCourseInfo(target);
-        if (courseOpt.isEmpty()) {
-            return false;
-        }
-
-        SchoolCourseDto course = courseOpt.get();
-        boolean usesThisClassroom = schoolApiPort.isSameClassroom(deviceAssigned, course.classroom())
-                || UosWiseApiClient.getEffectiveSchedules(course).stream()
-                .anyMatch(s -> schoolApiPort.isSameClassroom(deviceAssigned, s.classroom()));
-
-        if (!usesThisClassroom) {
-            return false;
-        }
-
-        OffsetDateTime now = OffsetDateTime.now(clock);
-        boolean hasActiveSession = !sessionRepository.findActiveSessions(target, now).isEmpty();
-        boolean isScheduledInThisClassroomNow = schoolApiPort.isCourseScheduledAtInClassroom(course, deviceAssigned, now);
-        return hasActiveSession || isScheduledInThisClassroomNow;
     }
 }
