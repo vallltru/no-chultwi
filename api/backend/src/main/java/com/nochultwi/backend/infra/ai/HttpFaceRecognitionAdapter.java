@@ -1,5 +1,6 @@
 package com.nochultwi.backend.infra.ai;
 
+import com.nochultwi.backend.domain.attendance.port.FaceRecognitionPort;
 import com.nochultwi.backend.domain.student.dto.EnrolledStudentDto;
 import com.nochultwi.backend.global.error.BusinessException;
 import com.nochultwi.backend.global.error.ErrorCode;

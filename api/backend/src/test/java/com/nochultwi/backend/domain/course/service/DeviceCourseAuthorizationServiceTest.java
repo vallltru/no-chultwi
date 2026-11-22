@@ -1,12 +1,12 @@
 package com.nochultwi.backend.domain.course.service;
 
+import com.nochultwi.backend.domain.course.dto.SchoolCourseDto;
 import com.nochultwi.backend.domain.course.entity.Session;
+import com.nochultwi.backend.domain.course.port.SchoolApiPort;
 import com.nochultwi.backend.domain.course.repository.SessionRepository;
 import com.nochultwi.backend.global.error.BusinessException;
 import com.nochultwi.backend.global.error.ErrorCode;
 import com.nochultwi.backend.global.security.device.DevicePrincipal;
-import com.nochultwi.backend.infra.school.SchoolApiPort;
-import com.nochultwi.backend.infra.school.SchoolCourseDto;
 import com.nochultwi.backend.infra.school.UosWiseApiClient;
 import com.nochultwi.backend.infra.school.UosWiseProperties;
 import org.junit.jupiter.api.DisplayName;

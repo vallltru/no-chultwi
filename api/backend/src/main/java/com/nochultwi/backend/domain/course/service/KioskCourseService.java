@@ -3,14 +3,13 @@ package com.nochultwi.backend.domain.course.service;
 import com.nochultwi.backend.domain.course.dto.CurrentSessionResponse;
 import com.nochultwi.backend.domain.course.dto.KioskCourseDto;
 import com.nochultwi.backend.domain.course.dto.KioskSessionDto;
+import com.nochultwi.backend.domain.course.dto.SchoolCourseDto;
 import com.nochultwi.backend.domain.course.entity.Session;
+import com.nochultwi.backend.domain.course.port.SchoolApiPort;
 import com.nochultwi.backend.domain.course.repository.SessionRepository;
 import com.nochultwi.backend.global.error.BusinessException;
 import com.nochultwi.backend.global.error.ErrorCode;
 import com.nochultwi.backend.global.security.device.DevicePrincipal;
-import com.nochultwi.backend.infra.school.SchoolApiPort;
-import com.nochultwi.backend.infra.school.SchoolCourseDto;
-import com.nochultwi.backend.infra.school.UosWiseApiClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -130,21 +129,21 @@ public class KioskCourseService {
         String todayDay = now.getDayOfWeek().name();
 
         List<SchoolCourseDto> todayCourses = classroomCourses.stream()
-                .filter(c -> UosWiseApiClient.getEffectiveSchedules(c).stream()
+                .filter(c -> CourseScheduleCalculator.getEffectiveSchedules(c).stream()
                         .anyMatch(s -> todayDay.equalsIgnoreCase(s.dayOfWeek())
                                 && schoolApiPort.isSameClassroom(classroom, s.classroom())))
                 .toList();
 
         if (!todayCourses.isEmpty()) {
             Optional<SchoolCourseDto> nextUpcoming = todayCourses.stream()
-                    .filter(c -> UosWiseApiClient.computeScheduleWindowForClassroom(c, classroom, now).openAt().isAfter(now))
-                    .min(Comparator.comparing(c -> UosWiseApiClient.computeScheduleWindowForClassroom(c, classroom, now).openAt()));
+                    .filter(c -> CourseScheduleCalculator.computeScheduleWindowForClassroom(c, classroom, now).openAt().isAfter(now))
+                    .min(Comparator.comparing(c -> CourseScheduleCalculator.computeScheduleWindowForClassroom(c, classroom, now).openAt()));
             if (nextUpcoming.isPresent()) {
                 return nextUpcoming.get();
             }
 
             return todayCourses.stream()
-                    .max(Comparator.comparing(c -> UosWiseApiClient.computeScheduleWindowForClassroom(c, classroom, now).closeAt()))
+                    .max(Comparator.comparing(c -> CourseScheduleCalculator.computeScheduleWindowForClassroom(c, classroom, now).closeAt()))
                     .orElse(todayCourses.get(0));
         }
 
@@ -156,8 +155,8 @@ public class KioskCourseService {
         String autoSessionId = "session-" + course.courseId() + "-" + today;
 
         return sessionRepository.findBySessionId(autoSessionId).orElseGet(() -> {
-            UosWiseApiClient.ScheduleWindow window =
-                    UosWiseApiClient.computeScheduleWindowForClassroom(course, classroom, now);
+            CourseScheduleCalculator.ScheduleWindow window =
+                    CourseScheduleCalculator.computeScheduleWindowForClassroom(course, classroom, now);
             int week = (int) Math.max(1, Math.min(16, ChronoUnit.WEEKS.between(SEMESTER_START, today) + 1));
 
             Session newSession = Session.builder()

@@ -1,5 +1,6 @@
 package com.nochultwi.backend.infra.ai;
 
+import com.nochultwi.backend.domain.attendance.port.FaceRecognitionPort;
 import com.nochultwi.backend.domain.student.dto.EnrolledStudentDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
