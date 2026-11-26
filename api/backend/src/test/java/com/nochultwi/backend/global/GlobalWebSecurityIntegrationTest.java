@@ -15,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -44,6 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * (RequestIdFilter -> Spring Security -> DispatcherServlet -> GlobalExceptionHandler).
  */
 @SpringBootTest
+@ActiveProfiles({"local", "test"})
 @Import(GlobalWebSecurityIntegrationTest.ProbeController.class)
 class GlobalWebSecurityIntegrationTest {
 
