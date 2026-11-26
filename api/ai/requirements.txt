@@ -5,5 +5,5 @@ pillow>=10.0.0
 python-multipart>=0.0.9
 onnxruntime>=1.17.0
 insightface>=2.1
-opencv-python>=4.8.0
+opencv-python-headless>=4.8.0
 scikit-image>=0.20.0

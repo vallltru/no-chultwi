@@ -7,5 +7,6 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 public record AiProperties(
         @DefaultValue("false") boolean enabled,
         @DefaultValue("http://localhost:8000") String serverUrl,
-        @DefaultValue("0.65") float similarityThreshold
+        @DefaultValue("0.42") float similarityThreshold,
+        @DefaultValue("") String internalSecret
 ) {}
