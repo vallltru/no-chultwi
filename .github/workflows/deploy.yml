@@ -4,12 +4,26 @@ on:
   push:
     branches:
       - dev
-      - feat/cicd-pipeline
+    paths:
+      - 'api/backend/src/main/**'
+      - 'api/backend/build.gradle'
+      - 'api/backend/settings.gradle'
+      - 'api/backend/Dockerfile'
+      - 'docker-compose.yml'
+      - '.github/workflows/deploy.yml'
   workflow_dispatch:
+
+concurrency:
+  group: deploy-backend-dev
+  cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       # 1. 소스 코드 체크아웃
@@ -29,7 +43,7 @@ jobs:
         run: chmod +x gradlew
         working-directory: api/backend
 
-      # 4. Spring Boot bootJar 빌드 (테스트 제외로 빠른 빌드)
+      # 4. Spring Boot bootJar 빌드 (테스트는 PR CI에서 검증 완료)
       - name: Build with Gradle
         run: ./gradlew bootJar -x test --no-daemon
         working-directory: api/backend
@@ -60,42 +74,62 @@ jobs:
           source: "docker-compose.yml"
           target: "~/no-chultwi"
 
-      # 8. EC2에서 최신 도커 이미지 당겨와서 가동 (3초 완료)
+      # 8. EC2에서 최신 도커 이미지 당겨와서 가동
       - name: Deploy to AWS EC2
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/nochultwi-backend:latest
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          SCHOOL_UOS_API_KEY: ${{ secrets.SCHOOL_UOS_API_KEY }}
+          AI_INTERNAL_SECRET: ${{ secrets.AI_INTERNAL_SECRET }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME || 'ubuntu' }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          envs: DOCKER_IMAGE,MYSQL_ROOT_PASSWORD,MYSQL_PASSWORD,SCHOOL_UOS_API_KEY,AI_INTERNAL_SECRET
           script: |
+            set -e
             # 스왑 메모리 활성화 보장
             sudo swapon /swapfile 2>/dev/null || true
 
             mkdir -p ~/no-chultwi && cd ~/no-chultwi
-            
-            # .env 파일이 없으면 기본 설정 생성
+
+            # .env 파일이 없으면 GitHub Secrets 기반으로 초기 생성 (평문 비밀번호 하드코딩 제거)
             if [ ! -f .env ]; then
-              echo "DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/nochultwi-backend:latest" > .env
-              echo "MYSQL_ROOT_PASSWORD=nochultwi_root_2026!" >> .env
-              echo "MYSQL_DATABASE=nochultwidb" >> .env
-              echo "MYSQL_USER=nochultwi_user" >> .env
-              echo "MYSQL_PASSWORD=nochultwi_pw_2026!" >> .env
-              echo "SERVER_PORT=8080" >> .env
-              echo "CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173" >> .env
+              if [ -z "${MYSQL_ROOT_PASSWORD}" ] || [ -z "${MYSQL_PASSWORD}" ]; then
+                echo "ERROR: .env file not found and MYSQL_ROOT_PASSWORD / MYSQL_PASSWORD secrets are not configured." >&2
+                exit 1
+              fi
+              umask 077
+              {
+                printf 'DOCKER_IMAGE=%s\n' "${DOCKER_IMAGE}"
+                printf 'MYSQL_ROOT_PASSWORD=%s\n' "${MYSQL_ROOT_PASSWORD}"
+                printf 'MYSQL_DATABASE=%s\n' "nochultwidb"
+                printf 'MYSQL_USER=%s\n' "nochultwi_user"
+                printf 'MYSQL_PASSWORD=%s\n' "${MYSQL_PASSWORD}"
+                printf 'SERVER_PORT=%s\n' "8080"
+                printf 'CORS_ALLOWED_ORIGINS=%s\n' "http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173"
+                printf 'SCHOOL_UOS_API_KEY=%s\n' "${SCHOOL_UOS_API_KEY}"
+                printf 'AI_FACE_ENABLED=%s\n' "false"
+                printf 'AI_FACE_SERVER_URL=%s\n' "http://localhost:8000"
+                printf 'AI_SIMILARITY_THRESHOLD=%s\n' "0.42"
+                printf 'AI_INTERNAL_SECRET=%s\n' "${AI_INTERNAL_SECRET}"
+              } > .env
             else
-              # DOCKER_IMAGE만 최신 태그로 갱신
+              # DOCKER_IMAGE만 최신 태그로 갱신 (기존 EC2 .env의 비밀번호·커스텀 설정 보존)
               if grep -q "^DOCKER_IMAGE=" .env; then
-                sed -i "s|^DOCKER_IMAGE=.*|DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/nochultwi-backend:latest|g" .env
+                sed -i "s|^DOCKER_IMAGE=.*|DOCKER_IMAGE=${DOCKER_IMAGE}|g" .env
               else
-                echo "DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/nochultwi-backend:latest" >> .env
+                printf 'DOCKER_IMAGE=%s\n' "${DOCKER_IMAGE}" >> .env
               fi
             fi
-            
-            # Docker Hub에서 방금 푸시된 최신 이미지만 다운로드 (약 3초 소요)
+
+            # Docker Hub에서 방금 푸시된 최신 이미지만 다운로드
             docker compose pull backend
-            
+
             # 백엔드 및 DB 컨테이너 실행 (MySQL healthcheck 통과 후 백엔드 실행)
             docker compose up -d --remove-orphans
-            
+
             # 이전 버전의 미사용 도커 이미지 청소
             docker image prune -f
