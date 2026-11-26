@@ -4,21 +4,24 @@ import com.nochultwi.backend.domain.attendance.entity.AttendanceRecord;
 import com.nochultwi.backend.domain.attendance.entity.AttendanceSource;
 import com.nochultwi.backend.domain.attendance.entity.AttendanceStatus;
 import com.nochultwi.backend.domain.attendance.repository.AttendanceRepository;
+import com.nochultwi.backend.domain.attendance.token.RecognitionTokenStore;
 import com.nochultwi.backend.domain.course.entity.Session;
 import com.nochultwi.backend.domain.course.repository.SessionRepository;
 import com.nochultwi.backend.domain.device.entity.Device;
 import com.nochultwi.backend.domain.device.repository.DeviceRepository;
-import com.nochultwi.backend.domain.student.dto.EnrolledStudentDto;
-import com.nochultwi.backend.domain.student.service.StudentService;
+import com.nochultwi.backend.domain.student.entity.CourseEnrollment;
+import com.nochultwi.backend.domain.student.entity.Student;
+import com.nochultwi.backend.domain.student.repository.CourseEnrollmentRepository;
+import com.nochultwi.backend.domain.student.repository.StudentRepository;
 import com.nochultwi.backend.global.filter.RequestIdFilter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +30,6 @@ import org.springframework.web.context.WebApplicationContext;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.util.List;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -36,12 +38,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@ActiveProfiles({"local", "test"})
 @Transactional
 class KioskRecognitionIntegrationTest {
 
     private static final String TEST_DEVICE_ID = "kiosk-test-601";
     private static final String TEST_DEVICE_KEY = "kiosk-test-secret-601!";
-    private static final String COURSE_ID = "30000-03";
+    private static final String COURSE_ID = "TEST-REC-COURSE-01";
     private static final String SESSION_ID = "session-test-kiosk-rec";
 
     @Autowired
@@ -60,7 +63,13 @@ class KioskRecognitionIntegrationTest {
     private AttendanceRepository attendanceRepository;
 
     @Autowired
-    private StudentService studentService;
+    private StudentRepository studentRepository;
+
+    @Autowired
+    private CourseEnrollmentRepository courseEnrollmentRepository;
+
+    @Autowired
+    private RecognitionTokenStore tokenStore;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -69,7 +78,7 @@ class KioskRecognitionIntegrationTest {
     private Clock clock;
 
     private MockMvc mockMvc;
-    private Session openSession;
+    private Student testStudent;
 
     @BeforeEach
     void setUp() {
@@ -80,8 +89,9 @@ class KioskRecognitionIntegrationTest {
 
         deviceRepository.deleteAll();
         attendanceRepository.deleteAll();
+        tokenStore.clear();
 
-        // 1. 단말기 등록
+        // 1. 단말기 등록 (테스트 전용 강좌 배정)
         Device device = Device.builder()
                 .deviceId(TEST_DEVICE_ID)
                 .deviceKeyHash(passwordEncoder.encode(TEST_DEVICE_KEY))
@@ -91,9 +101,21 @@ class KioskRecognitionIntegrationTest {
                 .build();
         deviceRepository.save(device);
 
-        // 2. 현재 열려 있는 차시(Session) 등록
+        // 2. 데모 시드 데이터에 의존하지 않도록 테스트 자체 수강생·수강신청 데이터 생성
+        float[] faceVector = new float[512];
+        faceVector[0] = 1.0f;
+        testStudent = studentRepository.save(Student.builder()
+                .studentNumber("2026880001")
+                .name("인식테스트학생")
+                .department("컴퓨터과학부")
+                .admissionYear(2026)
+                .faceVector(Student.floatsToBytes(faceVector))
+                .build());
+        courseEnrollmentRepository.save(new CourseEnrollment(COURSE_ID, testStudent));
+
+        // 3. 현재 열려 있는 차시(Session) 등록
         OffsetDateTime now = OffsetDateTime.now(clock);
-        openSession = sessionRepository.findBySessionId(SESSION_ID).orElseGet(() -> {
+        sessionRepository.findBySessionId(SESSION_ID).orElseGet(() -> {
             Session s = Session.builder()
                     .sessionId(SESSION_ID)
                     .courseId(COURSE_ID)
@@ -127,9 +149,9 @@ class KioskRecognitionIntegrationTest {
                 .andExpect(jsonPath("$.result").value("MATCHED"))
                 .andExpect(jsonPath("$.recognitionToken").isNotEmpty())
                 .andExpect(jsonPath("$.expiresAt").isNotEmpty())
-                .andExpect(jsonPath("$.candidate.name").isNotEmpty())
-                .andExpect(jsonPath("$.candidate.department").isNotEmpty())
-                .andExpect(jsonPath("$.candidate.admissionYear").isNumber());
+                .andExpect(jsonPath("$.candidate.name").value("인식테스트학생"))
+                .andExpect(jsonPath("$.candidate.department").value("컴퓨터과학부"))
+                .andExpect(jsonPath("$.candidate.admissionYear").value(2026));
     }
 
     @Test
@@ -155,13 +177,9 @@ class KioskRecognitionIntegrationTest {
     @Test
     @DisplayName("이미 출석 완료된 학생인 경우 200 OK와 ALREADY_CHECKED_IN 결과를 반환한다")
     void recognizeAlreadyCheckedIn() throws Exception {
-        List<EnrolledStudentDto> enrolled = studentService.getEnrolledStudents(COURSE_ID);
-        Long studentId = enrolled.get(0).studentId();
-
-        // 출석 레코드 미리 생성
         attendanceRepository.save(AttendanceRecord.builder()
                 .sessionId(SESSION_ID)
-                .studentId(studentId)
+                .studentId(testStudent.getId())
                 .status(AttendanceStatus.PRESENT)
                 .source(AttendanceSource.FACE)
                 .checkedInAt(OffsetDateTime.now(clock).minusMinutes(5))
@@ -187,12 +205,9 @@ class KioskRecognitionIntegrationTest {
     @Test
     @DisplayName("관리자에 의해 결석(ABSENT)으로 잠긴 학생인 경우 200 OK와 ATTENDANCE_LOCKED를 반환한다")
     void recognizeAttendanceLocked() throws Exception {
-        List<EnrolledStudentDto> enrolled = studentService.getEnrolledStudents(COURSE_ID);
-        Long studentId = enrolled.get(0).studentId();
-
         attendanceRepository.save(AttendanceRecord.builder()
                 .sessionId(SESSION_ID)
-                .studentId(studentId)
+                .studentId(testStudent.getId())
                 .status(AttendanceStatus.ABSENT)
                 .source(AttendanceSource.ADMIN)
                 .isManualOverride(true)
@@ -336,7 +351,7 @@ class KioskRecognitionIntegrationTest {
                         .param("sessionId", SESSION_ID)
                         .header("X-Device-Id", TEST_DEVICE_ID)
                         .header("X-Device-Key", TEST_DEVICE_KEY))
-                .andExpect(status().isPayloadTooLarge())
+                .andExpect(status().is(413))
                 .andExpect(jsonPath("$.code").value("IMAGE_TOO_LARGE"));
     }
 }

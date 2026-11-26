@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@ActiveProfiles({"local", "test"})
 @Transactional
 class KioskCheckInIntegrationTest {
 
@@ -329,6 +331,71 @@ class KioskCheckInIntegrationTest {
                         .content(objectMapper.writeValueAsString(new CheckInRequest(tokenData.token()))))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("ATTENDANCE_LOCKED"));
+    }
+
+    @Test
+    @DisplayName("이미 출석 완료된 학생이 새 토큰과 새 멱등키로 체크인 시 200 OK와 ALREADY_CHECKED_IN을 반환한다")
+    void checkInAlreadyCheckedInReturns200() throws Exception {
+        OffsetDateTime previousCheckedInAt = OffsetDateTime.now(clock).minusMinutes(5);
+        attendanceRepository.save(AttendanceRecord.builder()
+                .sessionId(SESSION_ID)
+                .studentId(TEST_STUDENT_ID)
+                .status(AttendanceStatus.PRESENT)
+                .source(AttendanceSource.FACE)
+                .checkedInAt(previousCheckedInAt)
+                .isManualOverride(false)
+                .build());
+
+        RecognitionTokenStore.RecognitionTokenData tokenData = tokenStore.createToken(
+                TEST_STUDENT_ID, "2026920001", "테스트학생", "컴퓨터과학부", 2026,
+                SESSION_ID, COURSE_ID, TEST_DEVICE_ID, 60
+        );
+
+        mockMvc.perform(post("/api/v1/kiosk/check-ins")
+                        .header("X-Device-Id", TEST_DEVICE_ID)
+                        .header("X-Device-Key", TEST_DEVICE_KEY)
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new CheckInRequest(tokenData.token()))))
+                .andExpect(status().isOk())
+                .andExpect(header().exists("X-Request-Id"))
+                .andExpect(jsonPath("$.result").value("ALREADY_CHECKED_IN"))
+                .andExpect(jsonPath("$.status").value("PRESENT"))
+                .andExpect(jsonPath("$.checkedInAt").isNotEmpty())
+                .andExpect(jsonPath("$.sessionId").value(SESSION_ID));
+
+        assertThat(attendanceRepository.count()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("이미 마감된 차시에 대해 체크인 요청 시 409 SESSION_CLOSED를 반환한다")
+    void checkInClosedSessionReturns409() throws Exception {
+        OffsetDateTime now = OffsetDateTime.now(clock);
+        String closedSessionId = "session-closed-checkin-01";
+        sessionRepository.save(Session.builder()
+                .sessionId(closedSessionId)
+                .courseId(COURSE_ID)
+                .date(LocalDate.now(clock))
+                .week(8)
+                .sessionNumber(3)
+                .openAt(now.minusHours(3))
+                .lateFrom(now.minusHours(2))
+                .closeAt(now.minusMinutes(10))
+                .build());
+
+        RecognitionTokenStore.RecognitionTokenData tokenData = tokenStore.createToken(
+                TEST_STUDENT_ID, "2026920001", "테스트학생", "컴퓨터과학부", 2026,
+                closedSessionId, COURSE_ID, TEST_DEVICE_ID, 60
+        );
+
+        mockMvc.perform(post("/api/v1/kiosk/check-ins")
+                        .header("X-Device-Id", TEST_DEVICE_ID)
+                        .header("X-Device-Key", TEST_DEVICE_KEY)
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new CheckInRequest(tokenData.token()))))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("SESSION_CLOSED"));
     }
 
     @Test
