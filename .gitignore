@@ -63,3 +63,10 @@ replay_pid*
 *.onnx
 api/test/
 api/ai/models/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
