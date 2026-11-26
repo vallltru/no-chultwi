@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
 
 import java.nio.ByteBuffer;
@@ -32,6 +33,12 @@ import java.util.Optional;
 @ConditionalOnProperty(name = "ai.face.enabled", havingValue = "true")
 @EnableConfigurationProperties(AiProperties.class)
 public class HttpFaceRecognitionAdapter implements FaceRecognitionPort {
+
+    static final String INTERNAL_SECRET_HEADER = "X-Internal-Secret";
+
+    private static final byte[] PNG_MAGIC = new byte[]{
+            (byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A
+    };
 
     private final AiProperties properties;
     private final RestClient restClient;
@@ -80,7 +87,7 @@ public class HttpFaceRecognitionAdapter implements FaceRecognitionPort {
             }
         }
 
-        // 3. 임계값(Threshold, 기본 0.65) 검증
+        // 3. 임계값(Threshold, 기본 0.42) 검증
         float threshold = properties.similarityThreshold();
         if (highestSimilarity >= threshold && bestCandidate != null) {
             log.info("Face recognized successfully: studentNumber={}, name={}, similarity={}/threshold={}",
@@ -94,21 +101,29 @@ public class HttpFaceRecognitionAdapter implements FaceRecognitionPort {
 
     private float[] extractFaceEmbedding(byte[] imageBytes) {
         try {
+            boolean isPng = isPngImage(imageBytes);
+            String filename = isPng ? "face.png" : "face.jpg";
+            MediaType imageMediaType = isPng ? MediaType.IMAGE_PNG : MediaType.IMAGE_JPEG;
+
             MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
             ByteArrayResource resource = new ByteArrayResource(imageBytes) {
                 @Override
                 public String getFilename() {
-                    return "face.jpg";
+                    return filename;
                 }
             };
 
             HttpHeaders partHeaders = new HttpHeaders();
-            partHeaders.setContentType(MediaType.IMAGE_JPEG);
+            partHeaders.setContentType(imageMediaType);
             HttpEntity<ByteArrayResource> fileEntity = new HttpEntity<>(resource, partHeaders);
             body.add("file", fileEntity);
 
-            AiEmbedResponse response = restClient.post()
-                    .uri("/embed")
+            RestClient.RequestBodySpec requestSpec = restClient.post().uri("/embed");
+            if (StringUtils.hasText(properties.internalSecret())) {
+                requestSpec = requestSpec.header(INTERNAL_SECRET_HEADER, properties.internalSecret().trim());
+            }
+
+            AiEmbedResponse response = requestSpec
                     .body(body)
                     .retrieve()
                     .body(AiEmbedResponse.class);
@@ -128,6 +143,18 @@ public class HttpFaceRecognitionAdapter implements FaceRecognitionPort {
             log.error("AI face recognition service communication failed: url={}", properties.serverUrl(), e);
             throw new BusinessException(ErrorCode.RECOGNITION_UNAVAILABLE, "얼굴 인식 서비스를 일시적으로 사용할 수 없습니다.");
         }
+    }
+
+    private boolean isPngImage(byte[] bytes) {
+        if (bytes.length < PNG_MAGIC.length) {
+            return false;
+        }
+        for (int i = 0; i < PNG_MAGIC.length; i++) {
+            if (bytes[i] != PNG_MAGIC[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private float[] bytesToFloats(byte[] bytes) {
